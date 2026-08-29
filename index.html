@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#075E54">
+
+<title>Absensi Santri eLKISI</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7f6;
+    color: #17201e;
+    padding-bottom: 80px;
+}
+
+/* HEADER */
+.header {
+    background: #075E54;
+    color: white;
+    padding: 24px 20px 28px;
+    border-radius: 0 0 28px 28px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.date {
+    margin-top: 8px;
+    font-size: 13px;
+    opacity: .85;
+}
+
+/* CONTAINER */
+.container {
+    padding: 18px;
+    max-width: 600px;
+    margin: auto;
+}
+
+/* SUMMARY */
+.summary {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: -5px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.06);
+}
+
+.summary-title {
+    font-size: 14px;
+    color: #68736f;
+}
+
+.percent {
+    font-size: 38px;
+    font-weight: bold;
+    margin: 5px 0 15px;
+    color: #075E54;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 8px;
+}
+
+.stat {
+    text-align: center;
+    padding: 10px 4px;
+    border-radius: 12px;
+    background: #f5f7f6;
+}
+
+.stat-number {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 11px;
+    margin-top: 3px;
+    color: #68736f;
+}
+
+/* SECTION */
+.section {
+    margin-top: 25px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* SEARCH */
+.search {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 14px;
+    background: white;
+    font-size: 14px;
+    outline: none;
+    box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
+
+/* STUDENT */
+.student {
+    background: white;
+    margin-top: 10px;
+    padding: 15px;
+    border-radius: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #e5f2ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #075E54;
+}
+
+.student-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.student-class {
+    font-size: 11px;
+    color: #7b8581;
+    margin-top: 3px;
+}
+
+/* BUTTONS */
+.status-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.status {
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.present {
+    background: #dff5e8;
+}
+
+.permission {
+    background: #fff2c9;
+}
+
+.sick {
+    background: #dcecff;
+}
+
+.absent {
+    background: #ffe1e1;
+}
+
+.status.active {
+    outline: 2px solid #075E54;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: white;
+    border-top: 1px solid #e5e8e7;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+}
+
+.nav-item {
+    text-align: center;
+    font-size: 11px;
+    color: #7c8582;
+}
+
+.nav-item.active {
+    color: #075E54;
+    font-weight: bold;
+}
+
+.nav-icon {
+    font-size: 22px;
+    display: block;
+    margin-bottom: 3px;
+}
+
+/* DESKTOP */
+@media (min-width: 700px) {
+    body {
+        background: #e9eeee;
+    }
+
+    .header {
+        max-width: 600px;
+        margin: auto;
+    }
+
+    .bottom-nav {
+        max-width: 600px;
+        margin: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="header-top">
+        <div class="logo">eLKISI ABSENSI</div>
+        <div>🔔</div>
+    </div>
+
+    <div class="date" id="tanggal"></div>
+</header>
+
+<main class="container">
+
+    <section class="summary">
+        <div class="summary-title">
+            Kehadiran Hari Ini
+        </div>
+
+        <div class="percent" id="persentase">
+            80%
+        </div>
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-number" id="hadir">4</div>
+                <div class="stat-label">Hadir</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" id="izin">1</div>
+                <div class="stat-label">Izin</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" id="sakit">0</div>
+                <div class="stat-label">Sakit</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" id="alpha">0</div>
+                <div class="stat-label">Alpha</div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-title">
+            Absensi Santri
+        </div>
+
+        <input
+            class="search"
+            type="text"
+            id="search"
+            placeholder="🔍  Cari nama santri..."
+        >
+
+        <div id="studentList"></div>
+
+    </section>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+    <div class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        Beranda
+    </div>
+
+    <div class="nav-item">
+        <span class="nav-icon">👨‍🎓</span>
+        Santri
+    </div>
+
+    <div class="nav-item">
+        <span class="nav-icon">📊</span>
+        Laporan
+    </div>
+
+    <div class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Pengaturan
+    </div>
+
+</nav>
+
+
+<script>
+
+const santri = [
+    {
+        nama: "Abdullah Hafiz",
+        kelas: "7 Azhari",
+        status: "hadir"
+    },
+    {
+        nama: "Annas Wafie Nashrullah",
+        kelas: "7 Azhari",
+        status: "hadir"
+    },
+    {
+        nama: "Haritsah Anas",
+        kelas: "7 Azhari",
+        status: "hadir"
+    },
+    {
+        nama: "Ghazi Agha Attaqi",
+        kelas: "7 Azhari",
+        status: "izin"
+    },
+    {
+        nama: "Syafiq Ubaidillah",
+        kelas: "7 Azhari",
+        status: "hadir"
+    }
+];
+
+
+function tampilkanSantri(data) {
+
+    const list = document.getElementById("studentList");
+
+    list.innerHTML = "";
+
+    data.forEach((s, index) => {
+
+        const initial = s.nama.charAt(0).toUpperCase();
+
+        list.innerHTML += `
+
+        <div class="student">
+
+            <div class="student-info">
+
+                <div class="avatar">
+                    ${initial}
+                </div>
+
+                <div>
+                    <div class="student-name">
+                        ${s.nama}
+                    </div>
+
+                    <div class="student-class">
+                        ${s.kelas}
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="status-buttons">
+
+                <button
+                    class="status present ${s.status === 'hadir' ? 'active' : ''}"
+                    onclick="ubahStatus(${index}, 'hadir')">
+                    🟢
+                </button>
+
+                <button
+                    class="status permission ${s.status === 'izin' ? 'active' : ''}"
+                    onclick="ubahStatus(${index}, 'izin')">
+                    🟡
+                </button>
+
+                <button
+                    class="status sick ${s.status === 'sakit' ? 'active' : ''}"
+                    onclick="ubahStatus(${index}, 'sakit')">
+                    🔵
+                </button>
+
+                <button
+                    class="status absent ${s.status === 'alpha' ? 'active' : ''}"
+                    onclick="ubahStatus(${index}, 'alpha')">
+                    🔴
+                </button>
+
+            </div>
+
+        </div>
+
+        `;
+    });
+
+}
+
+
+function ubahStatus(index, status) {
+
+    santri[index].status = status;
+
+    tampilkanSantri(santri);
+
+    hitungStatistik();
+
+}
+
+
+function hitungStatistik() {
+
+    let hadir = 0;
+    let izin = 0;
+    let sakit = 0;
+    let alpha = 0;
+
+    santri.forEach(s => {
+
+        if (s.status === "hadir") hadir++;
+        if (s.status === "izin") izin++;
+        if (s.status === "sakit") sakit++;
+        if (s.status === "alpha") alpha++;
+
+    });
+
+    const total = santri.length;
+
+    const persen = total
+        ? Math.round((hadir / total) * 100)
+        : 0;
+
+    document.getElementById("hadir").innerText = hadir;
+    document.getElementById("izin").innerText = izin;
+    document.getElementById("sakit").innerText = sakit;
+    document.getElementById("alpha").innerText = alpha;
+
+    document.getElementById("persentase").innerText =
+        persen + "%";
+
+}
+
+
+document.getElementById("search").addEventListener(
+    "input",
+    function() {
+
+        const keyword = this.value.toLowerCase();
+
+        const hasil = santri.filter(s =>
+            s.nama.toLowerCase().includes(keyword)
+        );
+
+        tampilkanSantri(hasil);
+
+    }
+);
+
+
+const sekarang = new Date();
+
+document.getElementById("tanggal").innerText =
+    sekarang.toLocaleDateString(
+        "id-ID",
+        {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }
+    );
+
+
+tampilkanSantri(santri);
+hitungStatistik();
+
+</script>
+
+</body>
+</html>
