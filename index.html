@@ -1,522 +1,1231 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#075E54">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<meta name="theme-color"
+content="#075E54">
 
 <title>Absensi Santri eLKISI</title>
 
+
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f7f6;
-    color: #17201e;
-    padding-bottom: 80px;
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f7f6;
+    color:#17201e;
+    padding-bottom:80px;
 }
 
-/* HEADER */
-.header {
-    background: #075E54;
-    color: white;
-    padding: 24px 20px 28px;
-    border-radius: 0 0 28px 28px;
+.header{
+    background:#075E54;
+    color:white;
+    padding:24px 20px 28px;
+    border-radius:0 0 28px 28px;
 }
 
-.header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.header-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
-.logo {
-    font-size: 22px;
-    font-weight: bold;
+.logo{
+    font-size:21px;
+    font-weight:bold;
 }
 
-.date {
-    margin-top: 8px;
-    font-size: 13px;
-    opacity: .85;
+.date{
+    margin-top:8px;
+    font-size:13px;
+    opacity:.85;
 }
 
-/* CONTAINER */
-.container {
-    padding: 18px;
-    max-width: 600px;
-    margin: auto;
+.container{
+    padding:18px;
+    max-width:600px;
+    margin:auto;
 }
 
-/* SUMMARY */
-.summary {
-    background: white;
-    border-radius: 20px;
-    padding: 20px;
-    margin-top: -5px;
-    box-shadow: 0 5px 20px rgba(0,0,0,.06);
+.summary{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,.06);
 }
 
-.summary-title {
-    font-size: 14px;
-    color: #68736f;
+.summary-title{
+    font-size:14px;
+    color:#68736f;
 }
 
-.percent {
-    font-size: 38px;
-    font-weight: bold;
-    margin: 5px 0 15px;
-    color: #075E54;
+.percent{
+    font-size:38px;
+    font-weight:bold;
+    margin:5px 0 15px;
+    color:#075E54;
 }
 
-.stats {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 8px;
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
 }
 
-.stat {
-    text-align: center;
-    padding: 10px 4px;
-    border-radius: 12px;
-    background: #f5f7f6;
+.stat{
+    text-align:center;
+    padding:10px 4px;
+    border-radius:12px;
+    background:#f5f7f6;
 }
 
-.stat-number {
-    font-size: 20px;
-    font-weight: bold;
+.stat-number{
+    font-size:20px;
+    font-weight:bold;
 }
 
-.stat-label {
-    font-size: 11px;
-    margin-top: 3px;
-    color: #68736f;
+.stat-label{
+    font-size:11px;
+    margin-top:3px;
+    color:#68736f;
 }
 
-/* SECTION */
-.section {
-    margin-top: 25px;
+.section{
+    margin-top:25px;
 }
 
-.section-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 12px;
+.section-title{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:12px;
 }
 
-/* SEARCH */
-.search {
-    width: 100%;
-    padding: 14px 16px;
-    border: none;
-    border-radius: 14px;
-    background: white;
-    font-size: 14px;
-    outline: none;
-    box-shadow: 0 3px 12px rgba(0,0,0,.04);
+.search{
+    width:100%;
+    padding:14px 16px;
+    border:none;
+    border-radius:14px;
+    background:white;
+    font-size:14px;
+    outline:none;
+    box-shadow:0 3px 12px rgba(0,0,0,.04);
 }
 
-/* STUDENT */
-.student {
-    background: white;
-    margin-top: 10px;
-    padding: 15px;
-    border-radius: 17px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 3px 12px rgba(0,0,0,.04);
+.student{
+    background:white;
+    margin-top:10px;
+    padding:15px;
+    border-radius:17px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    box-shadow:0 3px 12px rgba(0,0,0,.04);
 }
 
-.student-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.student-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
 }
 
-.avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #e5f2ef;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: #075E54;
+.avatar{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    border-radius:50%;
+    background:#e5f2ef;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    color:#075E54;
 }
 
-.student-name {
-    font-weight: bold;
-    font-size: 14px;
+.student-name{
+    font-weight:bold;
+    font-size:14px;
 }
 
-.student-class {
-    font-size: 11px;
-    color: #7b8581;
-    margin-top: 3px;
+.student-class{
+    font-size:11px;
+    color:#7b8581;
+    margin-top:3px;
 }
 
-/* BUTTONS */
-.status-buttons {
-    display: flex;
-    gap: 5px;
+.status-buttons{
+    display:flex;
+    gap:4px;
 }
 
-.status {
-    border: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    font-size: 15px;
-    cursor: pointer;
+.status{
+    border:none;
+    width:32px;
+    height:32px;
+    border-radius:9px;
+    font-size:14px;
+    cursor:pointer;
 }
 
-.present {
-    background: #dff5e8;
+.present{
+    background:#dff5e8;
 }
 
-.permission {
-    background: #fff2c9;
+.permission{
+    background:#fff2c9;
 }
 
-.sick {
-    background: #dcecff;
+.sick{
+    background:#dcecff;
 }
 
-.absent {
-    background: #ffe1e1;
+.absent{
+    background:#ffe1e1;
 }
 
-.status.active {
-    outline: 2px solid #075E54;
+.status.active{
+    outline:2px solid #075E54;
 }
 
-/* BOTTOM NAV */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 68px;
-    background: white;
-    border-top: 1px solid #e5e8e7;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 100;
+.status:disabled{
+    opacity:.5;
 }
 
-.nav-item {
-    text-align: center;
-    font-size: 11px;
-    color: #7c8582;
+.loading{
+    text-align:center;
+    padding:30px;
+    color:#68736f;
 }
 
-.nav-item.active {
-    color: #075E54;
-    font-weight: bold;
+.error{
+    background:#ffe1e1;
+    color:#a00000;
+    padding:15px;
+    border-radius:14px;
+    margin-top:15px;
+    font-size:13px;
 }
 
-.nav-icon {
-    font-size: 22px;
-    display: block;
-    margin-bottom: 3px;
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:68px;
+    background:white;
+    border-top:1px solid #e5e8e7;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:100;
 }
 
-/* DESKTOP */
-@media (min-width: 700px) {
-    body {
-        background: #e9eeee;
+.nav-item{
+    text-align:center;
+    font-size:11px;
+    color:#7c8582;
+}
+
+.nav-item.active{
+    color:#075E54;
+    font-weight:bold;
+}
+
+.nav-icon{
+    font-size:21px;
+    display:block;
+    margin-bottom:3px;
+}
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:82px;
+    transform:translateX(-50%);
+    background:#17201e;
+    color:white;
+    padding:12px 18px;
+    border-radius:12px;
+    font-size:13px;
+    display:none;
+    z-index:200;
+}
+
+@media(max-width:400px){
+
+    .student{
+        padding:12px;
     }
 
-    .header {
-        max-width: 600px;
-        margin: auto;
+    .student-name{
+        font-size:13px;
     }
 
-    .bottom-nav {
-        max-width: 600px;
-        margin: auto;
+    .status{
+        width:29px;
+        height:29px;
+        font-size:12px;
     }
+
 }
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <header class="header">
+
     <div class="header-top">
-        <div class="logo">eLKISI ABSENSI</div>
-        <div>🔔</div>
+
+        <div class="logo">
+            eLKISI ABSENSI
+        </div>
+
+        <div>
+            🔔
+        </div>
+
     </div>
 
-    <div class="date" id="tanggal"></div>
+    <div
+        class="date"
+        id="tanggal">
+    </div>
+
 </header>
+
+
 
 <main class="container">
 
-    <section class="summary">
-        <div class="summary-title">
-            Kehadiran Hari Ini
-        </div>
 
-        <div class="percent" id="persentase">
-            80%
-        </div>
+<section class="summary">
 
-        <div class="stats">
+    <div class="summary-title">
+        Kehadiran Hari Ini
+    </div>
 
-            <div class="stat">
-                <div class="stat-number" id="hadir">4</div>
-                <div class="stat-label">Hadir</div>
+    <div
+        class="percent"
+        id="persentase">
+        0%
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <div
+                class="stat-number"
+                id="hadir">
+                0
             </div>
 
-            <div class="stat">
-                <div class="stat-number" id="izin">1</div>
-                <div class="stat-label">Izin</div>
-            </div>
-
-            <div class="stat">
-                <div class="stat-number" id="sakit">0</div>
-                <div class="stat-label">Sakit</div>
-            </div>
-
-            <div class="stat">
-                <div class="stat-number" id="alpha">0</div>
-                <div class="stat-label">Alpha</div>
+            <div class="stat-label">
+                Hadir
             </div>
 
         </div>
-    </section>
 
 
-    <section class="section">
+        <div class="stat">
 
-        <div class="section-title">
-            Absensi Santri
+            <div
+                class="stat-number"
+                id="izin">
+                0
+            </div>
+
+            <div class="stat-label">
+                Izin
+            </div>
+
         </div>
 
-        <input
-            class="search"
-            type="text"
-            id="search"
-            placeholder="🔍  Cari nama santri..."
-        >
 
-        <div id="studentList"></div>
+        <div class="stat">
 
-    </section>
+            <div
+                class="stat-number"
+                id="sakit">
+                0
+            </div>
+
+            <div class="stat-label">
+                Sakit
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                class="stat-number"
+                id="alpha">
+                0
+            </div>
+
+            <div class="stat-label">
+                Alpha
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<section class="section">
+
+    <div class="section-title">
+        Absensi Santri
+    </div>
+
+
+    <input
+        class="search"
+        type="text"
+        id="search"
+        placeholder="🔍  Cari nama santri..."
+    >
+
+
+    <div id="studentList">
+
+        <div class="loading">
+            Menghubungkan ke Firebase...
+        </div>
+
+    </div>
+
+
+    <div
+        id="errorBox"
+        class="error"
+        style="display:none">
+    </div>
+
+</section>
+
 
 </main>
+
 
 
 <nav class="bottom-nav">
 
     <div class="nav-item active">
-        <span class="nav-icon">🏠</span>
+
+        <span class="nav-icon">
+            🏠
+        </span>
+
         Beranda
+
     </div>
 
+
     <div class="nav-item">
-        <span class="nav-icon">👨‍🎓</span>
+
+        <span class="nav-icon">
+            👨‍🎓
+        </span>
+
         Santri
+
     </div>
 
+
     <div class="nav-item">
-        <span class="nav-icon">📊</span>
+
+        <span class="nav-icon">
+            📊
+        </span>
+
         Laporan
+
     </div>
 
+
     <div class="nav-item">
-        <span class="nav-icon">⚙️</span>
+
+        <span class="nav-icon">
+            ⚙️
+        </span>
+
         Pengaturan
+
     </div>
 
 </nav>
 
 
-<script>
 
-const santri = [
-    {
-        nama: "Abdullah Hafiz",
-        kelas: "7 Azhari",
-        status: "hadir"
-    },
-    {
-        nama: "Annas Wafie Nashrullah",
-        kelas: "7 Azhari",
-        status: "hadir"
-    },
-    {
-        nama: "Haritsah Anas",
-        kelas: "7 Azhari",
-        status: "hadir"
-    },
-    {
-        nama: "Ghazi Agha Attaqi",
-        kelas: "7 Azhari",
-        status: "izin"
-    },
-    {
-        nama: "Syafiq Ubaidillah",
-        kelas: "7 Azhari",
-        status: "hadir"
+<div
+    class="toast"
+    id="toast">
+</div>
+
+
+
+<script type="module">
+
+/* =========================
+   FIREBASE
+========================= */
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+    getAuth,
+    signInAnonymously,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    addDoc,
+    setDoc,
+    doc,
+    query,
+    where
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+
+    apiKey:
+    "AIzaSyB2zc2-YwgauMiWDlJHMpk00nf7qsMJtnY",
+
+    authDomain:
+    "absensi-santri-b05c2.firebaseapp.com",
+
+    projectId:
+    "absensi-santri-b05c2",
+
+    storageBucket:
+    "absensi-santri-b05c2.firebasestorage.app",
+
+    messagingSenderId:
+    "950602106727",
+
+    appId:
+    "1:950602106727:web:579a6c50a7f897939b51c2",
+
+    measurementId:
+    "G-7R9S1BBHBY"
+
+};
+
+
+/* =========================
+   INIT FIREBASE
+========================= */
+
+const app =
+    initializeApp(firebaseConfig);
+
+const auth =
+    getAuth(app);
+
+const db =
+    getFirestore(app);
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let santri = [];
+
+let absensiHariIni = {};
+
+let user = null;
+
+let tanggalHariIni = "";
+
+
+
+/* =========================
+   TANGGAL
+========================= */
+
+const sekarang = new Date();
+
+tanggalHariIni =
+    sekarang.toLocaleDateString(
+        "sv-SE"
+    );
+
+
+document.getElementById(
+    "tanggal"
+).innerText =
+    sekarang.toLocaleDateString(
+        "id-ID",
+        {
+            weekday:"long",
+            day:"numeric",
+            month:"long",
+            year:"numeric"
+        }
+    );
+
+
+
+/* =========================
+   TOAST
+========================= */
+
+function toast(pesan){
+
+    const element =
+        document.getElementById("toast");
+
+    element.innerText =
+        pesan;
+
+    element.style.display =
+        "block";
+
+    setTimeout(() => {
+
+        element.style.display =
+            "none";
+
+    },2000);
+
+}
+
+
+
+/* =========================
+   ERROR
+========================= */
+
+function tampilError(pesan){
+
+    const box =
+        document.getElementById(
+            "errorBox"
+        );
+
+    box.innerText =
+        pesan;
+
+    box.style.display =
+        "block";
+
+}
+
+
+
+/* =========================
+   LOGIN ANONYMOUS
+========================= */
+
+signInAnonymously(auth)
+.then(() => {
+
+    console.log(
+        "Login Firebase berhasil"
+    );
+
+})
+.catch((error) => {
+
+    console.error(error);
+
+    tampilError(
+        "Gagal terhubung ke Firebase: "
+        + error.message
+    );
+
+});
+
+
+
+/* =========================
+   AUTH STATE
+========================= */
+
+onAuthStateChanged(
+    auth,
+    async (currentUser) => {
+
+        if(!currentUser){
+
+            return;
+
+        }
+
+        user =
+            currentUser;
+
+        console.log(
+            "User:",
+            user.uid
+        );
+
+        await mulaiAplikasi();
+
     }
-];
+);
 
 
-function tampilkanSantri(data) {
 
-    const list = document.getElementById("studentList");
+/* =========================
+   MULAI APLIKASI
+========================= */
+
+async function mulaiAplikasi(){
+
+    try{
+
+        await siapkanSantri();
+
+        await ambilAbsensi();
+
+        tampilkanSantri(
+            santri
+        );
+
+        hitungStatistik();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        tampilError(
+            "Terjadi kesalahan: "
+            + error.message
+        );
+
+    }
+
+}
+
+
+
+/* =========================
+   DATA SANTRI
+========================= */
+
+async function siapkanSantri(){
+
+    const snapshot =
+        await getDocs(
+            collection(
+                db,
+                "santri"
+            )
+        );
+
+
+    /*
+       Jika database masih kosong,
+       kita masukkan 5 santri contoh.
+    */
+
+    if(snapshot.empty){
+
+        const contoh = [
+
+            {
+                nama:"Abdullah Hafiz",
+                kelas:"7 Azhari",
+                kamar:"-"
+            },
+
+            {
+                nama:"Annas Wafie Nashrullah",
+                kelas:"7 Azhari",
+                kamar:"-"
+            },
+
+            {
+                nama:"Haritsah Anas",
+                kelas:"7 Azhari",
+                kamar:"-"
+            },
+
+            {
+                nama:"Ghazi Agha Attaqi",
+                kelas:"7 Azhari",
+                kamar:"-"
+            },
+
+            {
+                nama:"Syafiq Ubaidillah",
+                kelas:"7 Azhari",
+                kamar:"-"
+            }
+
+        ];
+
+
+        for(
+            const data
+            of contoh
+        ){
+
+            await addDoc(
+                collection(
+                    db,
+                    "santri"
+                ),
+                data
+            );
+
+        }
+
+
+        /*
+           Ambil ulang setelah
+           data contoh dibuat.
+        */
+
+        const baru =
+            await getDocs(
+                collection(
+                    db,
+                    "santri"
+                )
+            );
+
+
+        santri =
+            baru.docs.map(
+                item => ({
+                    id:item.id,
+                    ...item.data()
+                })
+            );
+
+    }
+
+    else{
+
+        santri =
+            snapshot.docs.map(
+                item => ({
+                    id:item.id,
+                    ...item.data()
+                })
+            );
+
+    }
+
+}
+
+
+
+/* =========================
+   AMBIL ABSENSI HARI INI
+========================= */
+
+async function ambilAbsensi(){
+
+    absensiHariIni = {};
+
+
+    const q =
+        query(
+
+            collection(
+                db,
+                "absensi"
+            ),
+
+            where(
+                "tanggal",
+                "==",
+                tanggalHariIni
+            )
+
+        );
+
+
+    const snapshot =
+        await getDocs(q);
+
+
+    snapshot.forEach(
+        item => {
+
+            const data =
+                item.data();
+
+            absensiHariIni[
+                data.santriId
+            ] =
+                data.status;
+
+        }
+    );
+
+}
+
+
+
+/* =========================
+   TAMPILKAN SANTRI
+========================= */
+
+function tampilkanSantri(data){
+
+    const list =
+        document.getElementById(
+            "studentList"
+        );
 
     list.innerHTML = "";
 
-    data.forEach((s, index) => {
 
-        const initial = s.nama.charAt(0).toUpperCase();
+    if(data.length === 0){
 
-        list.innerHTML += `
-
-        <div class="student">
-
-            <div class="student-info">
-
-                <div class="avatar">
-                    ${initial}
-                </div>
-
-                <div>
-                    <div class="student-name">
-                        ${s.nama}
-                    </div>
-
-                    <div class="student-class">
-                        ${s.kelas}
-                    </div>
-                </div>
-
+        list.innerHTML = `
+            <div class="loading">
+                Santri tidak ditemukan.
             </div>
-
-
-            <div class="status-buttons">
-
-                <button
-                    class="status present ${s.status === 'hadir' ? 'active' : ''}"
-                    onclick="ubahStatus(${index}, 'hadir')">
-                    🟢
-                </button>
-
-                <button
-                    class="status permission ${s.status === 'izin' ? 'active' : ''}"
-                    onclick="ubahStatus(${index}, 'izin')">
-                    🟡
-                </button>
-
-                <button
-                    class="status sick ${s.status === 'sakit' ? 'active' : ''}"
-                    onclick="ubahStatus(${index}, 'sakit')">
-                    🔵
-                </button>
-
-                <button
-                    class="status absent ${s.status === 'alpha' ? 'active' : ''}"
-                    onclick="ubahStatus(${index}, 'alpha')">
-                    🔴
-                </button>
-
-            </div>
-
-        </div>
-
         `;
-    });
+
+        return;
+
+    }
+
+
+    data.forEach(
+        (s) => {
+
+            const status =
+                absensiHariIni[
+                    s.id
+                ] || "";
+
+
+            const initial =
+                s.nama
+                .charAt(0)
+                .toUpperCase();
+
+
+            list.innerHTML += `
+
+            <div class="student">
+
+                <div class="student-info">
+
+                    <div class="avatar">
+                        ${initial}
+                    </div>
+
+
+                    <div>
+
+                        <div class="student-name">
+                            ${s.nama}
+                        </div>
+
+                        <div class="student-class">
+                            ${s.kelas}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="status-buttons">
+
+                    <button
+                        class="status present
+                        ${status==="hadir"?"active":""}"
+                        onclick="ubahStatus(
+                            '${s.id}',
+                            'hadir'
+                        )">
+                        🟢
+                    </button>
+
+
+                    <button
+                        class="status permission
+                        ${status==="izin"?"active":""}"
+                        onclick="ubahStatus(
+                            '${s.id}',
+                            'izin'
+                        )">
+                        🟡
+                    </button>
+
+
+                    <button
+                        class="status sick
+                        ${status==="sakit"?"active":""}"
+                        onclick="ubahStatus(
+                            '${s.id}',
+                            'sakit'
+                        )">
+                        🔵
+                    </button>
+
+
+                    <button
+                        class="status absent
+                        ${status==="alpha"?"active":""}"
+                        onclick="ubahStatus(
+                            '${s.id}',
+                            'alpha'
+                        )">
+                        🔴
+                    </button>
+
+                </div>
+
+            </div>
+
+            `;
+
+        }
+    );
 
 }
 
 
-function ubahStatus(index, status) {
 
-    santri[index].status = status;
+/* =========================
+   UBAH STATUS
+========================= */
 
-    tampilkanSantri(santri);
+window.ubahStatus =
+async function(
+    santriId,
+    status
+){
 
-    hitungStatistik();
+    try{
 
-}
+        /*
+           ID dokumen dibuat berdasarkan
+           tanggal + ID santri.
+        */
+
+        const documentId =
+            tanggalHariIni
+            + "_"
+            + santriId;
 
 
-function hitungStatistik() {
+        await setDoc(
+
+            doc(
+                db,
+                "absensi",
+                documentId
+            ),
+
+            {
+
+                santriId:
+                    santriId,
+
+                tanggal:
+                    tanggalHariIni,
+
+                status:
+                    status,
+
+                userId:
+                    user.uid,
+
+                updatedAt:
+                    new Date().toISOString()
+
+            }
+
+        );
+
+
+        absensiHariIni[
+            santriId
+        ] =
+            status;
+
+
+        tampilkanSantri(
+            santri
+        );
+
+        hitungStatistik();
+
+        toast(
+            "Absensi tersimpan ✓"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        toast(
+            "Gagal menyimpan"
+        );
+
+        tampilError(
+            error.message
+        );
+
+    }
+
+};
+
+
+
+/* =========================
+   STATISTIK
+========================= */
+
+function hitungStatistik(){
 
     let hadir = 0;
     let izin = 0;
     let sakit = 0;
     let alpha = 0;
 
-    santri.forEach(s => {
 
-        if (s.status === "hadir") hadir++;
-        if (s.status === "izin") izin++;
-        if (s.status === "sakit") sakit++;
-        if (s.status === "alpha") alpha++;
+    santri.forEach(
+        s => {
 
-    });
+            const status =
+                absensiHariIni[
+                    s.id
+                ];
 
-    const total = santri.length;
 
-    const persen = total
-        ? Math.round((hadir / total) * 100)
+            if(status==="hadir")
+                hadir++;
+
+            if(status==="izin")
+                izin++;
+
+            if(status==="sakit")
+                sakit++;
+
+            if(status==="alpha")
+                alpha++;
+
+        }
+    );
+
+
+    const total =
+        santri.length;
+
+
+    const persen =
+        total
+        ? Math.round(
+            (hadir / total) * 100
+          )
         : 0;
 
-    document.getElementById("hadir").innerText = hadir;
-    document.getElementById("izin").innerText = izin;
-    document.getElementById("sakit").innerText = sakit;
-    document.getElementById("alpha").innerText = alpha;
 
-    document.getElementById("persentase").innerText =
+    document.getElementById(
+        "hadir"
+    ).innerText =
+        hadir;
+
+
+    document.getElementById(
+        "izin"
+    ).innerText =
+        izin;
+
+
+    document.getElementById(
+        "sakit"
+    ).innerText =
+        sakit;
+
+
+    document.getElementById(
+        "alpha"
+    ).innerText =
+        alpha;
+
+
+    document.getElementById(
+        "persentase"
+    ).innerText =
         persen + "%";
 
 }
 
 
-document.getElementById("search").addEventListener(
+
+/* =========================
+   PENCARIAN
+========================= */
+
+document.getElementById(
+    "search"
+).addEventListener(
     "input",
-    function() {
+    function(){
 
-        const keyword = this.value.toLowerCase();
+        const keyword =
+            this.value
+            .toLowerCase();
 
-        const hasil = santri.filter(s =>
-            s.nama.toLowerCase().includes(keyword)
+
+        const hasil =
+            santri.filter(
+                s =>
+                    s.nama
+                    .toLowerCase()
+                    .includes(keyword)
+            );
+
+
+        tampilkanSantri(
+            hasil
         );
-
-        tampilkanSantri(hasil);
 
     }
 );
 
-
-const sekarang = new Date();
-
-document.getElementById("tanggal").innerText =
-    sekarang.toLocaleDateString(
-        "id-ID",
-        {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        }
-    );
-
-
-tampilkanSantri(santri);
-hitungStatistik();
 
 </script>
 
