@@ -111,14 +111,8 @@ body{
     margin-bottom:12px;
 }
 
-/* Filter bar: search + dropdown kelas */
-.filter-bar{
-    display:flex;
-    gap:10px;
-}
-
 .search{
-    flex:2;
+    width:100%;
     padding:14px 16px;
     border:none;
     border-radius:14px;
@@ -126,25 +120,6 @@ body{
     font-size:14px;
     outline:none;
     box-shadow:0 3px 12px rgba(0,0,0,.04);
-}
-
-.filter-kelas{
-    flex:1;
-    padding:14px 12px;
-    border:none;
-    border-radius:14px;
-    background:white;
-    font-size:14px;
-    outline:none;
-    color:#17201e;
-    box-shadow:0 3px 12px rgba(0,0,0,.04);
-    cursor:pointer;
-    appearance:none;
-    -webkit-appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='[w3.org](http://www.w3.org/2000/svg)' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2368736f' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right 14px center;
-    padding-right:32px;
 }
 
 .student{
@@ -290,15 +265,6 @@ body{
 
 @media(max-width:400px){
 
-    .filter-bar{
-        flex-direction:column;
-        gap:8px;
-    }
-
-    .filter-kelas{
-        flex:auto;
-    }
-
     .student{
         padding:12px;
     }
@@ -332,7 +298,7 @@ body{
         </div>
 
         <div>
-            🔔
+            ðŸ””
         </div>
 
     </div>
@@ -436,27 +402,12 @@ body{
     </div>
 
 
-    <!-- FILTER BAR: SEARCH + PILIHAN KELAS -->
-    <div class="filter-bar">
-
-        <input
-            class="search"
-            type="text"
-            id="search"
-            placeholder="🔍  Cari nama santri..."
-        >
-
-        <select
-            class="filter-kelas"
-            id="filterKelas">
-
-            <option value="">
-                📚 Semua Kelas
-            </option>
-
-        </select>
-
-    </div>
+    <input
+        class="search"
+        type="text"
+        id="search"
+        placeholder="ðŸ”  Cari nama santri..."
+    >
 
 
     <div id="studentList">
@@ -486,7 +437,7 @@ body{
     <div class="nav-item active">
 
         <span class="nav-icon">
-            🏠
+            ðŸ 
         </span>
 
         Beranda
@@ -497,7 +448,7 @@ body{
     <div class="nav-item">
 
         <span class="nav-icon">
-            👨‍🎓
+            ðŸ‘¨â€ðŸŽ“
         </span>
 
         Santri
@@ -508,7 +459,7 @@ body{
     <div class="nav-item">
 
         <span class="nav-icon">
-            📊
+            ðŸ“Š
         </span>
 
         Laporan
@@ -519,7 +470,7 @@ body{
     <div class="nav-item">
 
         <span class="nav-icon">
-            ⚙️
+            âš™ï¸
         </span>
 
         Pengaturan
@@ -545,13 +496,13 @@ body{
 
 import {
     initializeApp
-} from "[gstatic.com](https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js)";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
     getAuth,
     signInAnonymously,
     onAuthStateChanged
-} from "[gstatic.com](https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js)";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
     getFirestore,
@@ -563,7 +514,7 @@ import {
     query,
     where,
     deleteDoc
-} from "[gstatic.com](https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js)";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 /* =========================
    FIREBASE CONFIG
@@ -763,9 +714,6 @@ async function mulaiAplikasi(){
 
         await ambilAbsensi();
 
-        // ============ ISI DROPDOWN KELAS ============
-        isiDropdownKelas();
-
         tampilkanSantri(
             santri
         );
@@ -928,42 +876,6 @@ async function siapkanSantri(){
 
 
 /* =========================
-   ISI DROPDOWN KELAS
-========================= */
-
-function isiDropdownKelas(){
-
-    const dropdown =
-        document.getElementById("filterKelas");
-
-    // Ambil daftar kelas unik dari data santri, urutkan
-    const kelasUnik = [
-        ...new Set(
-            santri.map(s => s.kelas)
-        )
-    ].sort();
-
-    // Tambahkan opsi kelas ke dropdown
-    kelasUnik.forEach(kelas => {
-
-        const option =
-            document.createElement("option");
-
-        option.value =
-            kelas;
-
-        option.innerText =
-            "📚 " + kelas;
-
-        dropdown.appendChild(option);
-
-    });
-
-}
-
-
-
-/* =========================
    AMBIL ABSENSI HARI INI
 ========================= */
 
@@ -1088,7 +1000,7 @@ function tampilkanSantri(data){
                             '${s.id}',
                             'hadir'
                         )">
-                        🟢
+                        ðŸŸ¢
                     </button>
 
 
@@ -1099,7 +1011,7 @@ function tampilkanSantri(data){
                             '${s.id}',
                             'izin'
                         )">
-                        🟡
+                        ðŸŸ¡
                     </button>
 
 
@@ -1110,7 +1022,7 @@ function tampilkanSantri(data){
                             '${s.id}',
                             'sakit'
                         )">
-                        🔵
+                        ðŸ”µ
                     </button>
 
 
@@ -1121,7 +1033,7 @@ function tampilkanSantri(data){
                             '${s.id}',
                             'alpha'
                         )">
-                        🔴
+                        ðŸ”´
                     </button>
 
                 </div>
@@ -1196,13 +1108,14 @@ async function(
             status;
 
 
-        // Tampilkan ulang dengan filter aktif
-        filterDanTampilkan();
+        tampilkanSantri(
+            santri
+        );
 
         hitungStatistik();
 
         toast(
-            "Absensi tersimpan ✓"
+            "Absensi tersimpan âœ“"
         );
 
     }
@@ -1236,7 +1149,7 @@ function hitungStatistik(){
     let sakit = 0;
     let alpha = 0;
 
-    // Statistik tetap dihitung dari SELURUH santri (bukan yang difilter)
+
     santri.forEach(
         s => {
 
@@ -1308,67 +1221,34 @@ function hitungStatistik(){
 
 
 /* =========================
-   FILTER GABUNGAN: PENCARIAN + KELAS
-========================= */
-
-function filterDanTampilkan(){
-
-    const keyword =
-        document.getElementById("search")
-        .value
-        .toLowerCase();
-
-    const kelasDipilih =
-        document.getElementById("filterKelas")
-        .value;
-
-
-    const hasil =
-        santri.filter(s => {
-
-            const cocokNama =
-                !keyword
-                || s.nama
-                    .toLowerCase()
-                    .includes(keyword);
-
-            const cocokKelas =
-                !kelasDipilih
-                || s.kelas === kelasDipilih;
-
-            return cocokNama && cocokKelas;
-
-        });
-
-
-    tampilkanSantri(hasil);
-
-}
-
-
-
-/* =========================
-   EVENT LISTENER — PENCARIAN
+   PENCARIAN
 ========================= */
 
 document.getElementById(
     "search"
 ).addEventListener(
     "input",
-    filterDanTampilkan
-);
+    function(){
+
+        const keyword =
+            this.value
+            .toLowerCase();
 
 
+        const hasil =
+            santri.filter(
+                s =>
+                    s.nama
+                    .toLowerCase()
+                    .includes(keyword)
+            );
 
-/* =========================
-   EVENT LISTENER — DROPDOWN KELAS
-========================= */
 
-document.getElementById(
-    "filterKelas"
-).addEventListener(
-    "change",
-    filterDanTampilkan
+        tampilkanSantri(
+            hasil
+        );
+
+    }
 );
 
 
