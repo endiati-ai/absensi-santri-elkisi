@@ -200,6 +200,7 @@ body{
 
 .btn-edit{ background:#dcecff; color:#0056b3; }
 .btn-import{ background:#e5f2ef; color:#075E54; border:1px solid #075E54; }
+.btn-danger{ background:#ffe1e1; color:#a00000; border:1px solid #ffe1e1; }
 .btn-toggle{ background:#ffe1e1; color:#a00000; }
 .btn-toggle.active-status{ background:#dff5e8; color:#0e6231; }
 
@@ -402,7 +403,8 @@ body{
         <section class="section" style="margin-top:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                 <div class="section-title" style="margin-bottom:0;">Kelola Santri</div>
-                <div style="display:flex; gap:6px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn-action btn-danger" onclick="bukaModalHapusKelas()">🗑️ Hapus Per Kelas</button>
                     <button class="btn-action btn-import" onclick="bukaModalImport()">📥 Import CSV</button>
                     <button class="btn-action btn-edit" onclick="bukaModalSantri()">+ Tambah</button>
                 </div>
@@ -465,7 +467,7 @@ body{
                 <strong>Format Kolom Header CSV:</strong><br>
                 <code>nama,kelas,kamar</code><br><br>
                 Contoh isi CSV:<br>
-                <em>Ahmad Fauzi,7 Azhari,Kamar 01</em>
+                <em>Ahmad Fauzi,7 Azhari Pa,Kamar 01</em>
             </div>
             <div class="modal-buttons">
                 <button type="button" class="btn-primary btn-cancel" onclick="tutupModalImport()">Batal</button>
@@ -475,10 +477,32 @@ body{
     </div>
 </div>
 
+<!-- MODAL HAPUS PER KELAS -->
+<div class="modal" id="modalHapusKelas">
+    <div class="modal-content">
+        <div class="modal-title" style="color:#a00000;">🗑️ Hapus Data Per Kelas</div>
+        <form id="formHapusKelas">
+            <div class="form-group">
+                <label>Pilih Kelas yang Akan Dihapus</label>
+                <select id="pilihanKelasHapus" class="input-field" required>
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+            <div class="file-info" style="background:#ffe1e1; color:#a00000;">
+                ⚠️ <strong>Peringatan:</strong> Seluruh santri dalam kelas yang dipilih akan dihapus secara permanen dari database!
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-primary btn-cancel" onclick="tutupModalHapusKelas()">Batal</button>
+                <button type="submit" class="btn-primary" id="btnProsesHapusKelas" style="background:#a00000; margin-top:0;">Hapus Kelas</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, doc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, doc, query, where, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB2zc2-YwgauMiWDlJHMpk00nf7qsMJtnY",
@@ -546,20 +570,9 @@ async function ambilDataSantri(){
     const snapshot = await getDocs(collection(db, "santri"));
 
     if(snapshot.empty){
-        const contoh = [
-            { nama:"Abdullah Hafiz", kelas:"7 Azhari", kamar:"-", status:"aktif" },
-            { nama:"Annas Wafie Nashrullah", kelas:"7 Azhari", kamar:"-", status:"aktif" },
-            { nama:"Haritsah Anas", kelas:"7 Azhari", kamar:"-", status:"aktif" }
-        ];
-
-        for(const data of contoh){
-            await addDoc(collection(db, "santri"), data);
-        }
-
-        const baru = await getDocs(collection(db, "santri"));
-        santri = baru.docs.map(item => ({ id: item.id, status: "aktif", ...item.data() }));
+        santri = [];
     } else {
-        santri = snapshot.docs.map(item => ({ id: item.id, status: "aktif", ...item.data() }));
+        santri = snapshot.docs.map(item => ({ id: item.id, status: item.data().status || "aktif", ...item.data() }));
     }
 }
 
@@ -582,17 +595,29 @@ async function ambilAbsensi(){
 
 function siapkanFilterKelas(){
     const select = document.getElementById("filterKelas");
-    if(!select) return;
-
+    const selectHapus = document.getElementById("pilihanKelasHapus");
+    
     const daftarKelas = [...new Set(santri.map(s => s.kelas).filter(k => k))].sort();
-    select.innerHTML = `<option value="">Semua Kelas</option>`;
 
-    daftarKelas.forEach(kelas => {
-        const option = document.createElement("option");
-        option.value = kelas;
-        option.textContent = kelas;
-        select.appendChild(option);
-    });
+    if(select){
+        select.innerHTML = `<option value="">Semua Kelas</option>`;
+        daftarKelas.forEach(kelas => {
+            const option = document.createElement("option");
+            option.value = kelas;
+            option.textContent = kelas;
+            select.appendChild(option);
+        });
+    }
+
+    if(selectHapus){
+        selectHapus.innerHTML = `<option value="">-- Pilih Kelas --</option>`;
+        daftarKelas.forEach(kelas => {
+            const option = document.createElement("option");
+            option.value = kelas;
+            option.textContent = kelas;
+            selectHapus.appendChild(option);
+        });
+    }
 }
 
 function filterSantri(){
@@ -616,7 +641,7 @@ function tampilkanSantri(data){
     const santriAktif = data.filter(s => s.status !== "nonaktif");
 
     if(santriAktif.length === 0){
-        list.innerHTML = `<div class="loading">Santri tidak ditemukan / tidak aktif.</div>`;
+        list.innerHTML = `<div class="loading">Santri tidak ditemukan / belum ada data.</div>`;
         return;
     }
 
@@ -784,7 +809,77 @@ window.tutupModalImport = function(){
     document.getElementById("modalImport").style.display = "none";
 };
 
-// PROSES IMPORT CSV (Sudah diperbaiki untuk menangani pemisah ekstra & spasi)
+// MODAL HAPUS KELAS
+window.bukaModalHapusKelas = function(){
+    siapkanFilterKelas();
+    document.getElementById("formHapusKelas").reset();
+    document.getElementById("modalHapusKelas").style.display = "flex";
+};
+
+window.tutupModalHapusKelas = function(){
+    document.getElementById("modalHapusKelas").style.display = "none";
+};
+
+// PROSES HAPUS SANTRI PER KELAS
+document.getElementById("formHapusKelas").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const kelasTarget = document.getElementById("pilihanKelasHapus").value;
+
+    if(!kelasTarget) return;
+
+    if(!confirm(`Apakah Anda yakin ingin menghapus SELURUH santri di kelas '${kelasTarget}'? Data yang dihapus tidak bisa dikembalikan!`)){
+        return;
+    }
+
+    const btn = document.getElementById("btnProsesHapusKelas");
+    btn.disabled = true;
+    btn.innerText = "Menghapus...";
+
+    try {
+        const q = query(collection(db, "santri"), where("kelas", "==", kelasTarget));
+        const snapshot = await getDocs(q);
+
+        if(snapshot.empty){
+            toast("Tidak ada data santri pada kelas ini.");
+            return;
+        }
+
+        let batch = writeBatch(db);
+        let count = 0;
+        let totalDihapus = 0;
+
+        snapshot.forEach((docSnapshot) => {
+            batch.delete(docSnapshot.ref);
+            count++;
+            totalDihapus++;
+
+            if(count === 400){
+                batch.commit();
+                batch = writeBatch(db);
+                count = 0;
+            }
+        });
+
+        if(count > 0){
+            await batch.commit();
+        }
+
+        toast(`Berhasil menghapus ${totalDihapus} santri kelas ${kelasTarget}! ✓`);
+        tutupModalHapusKelas();
+        await ambilDataSantri();
+        siapkanFilterKelas();
+        tampilkanKelolaSantri();
+
+    } catch(err){
+        toast("Gagal menghapus: " + err.message);
+        tampilError("Hapus Error: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Hapus Kelas";
+    }
+});
+
+// PROSES IMPORT CSV
 document.getElementById("formImport").addEventListener("submit", async function(e){
     e.preventDefault();
     const fileInput = document.getElementById("fileCsv");
@@ -800,17 +895,14 @@ document.getElementById("formImport").addEventListener("submit", async function(
     reader.onload = async function(evt){
         try {
             const teks = evt.target.result;
-            // Pecah baris dan bersihkan dari baris kosong
             const baris = teks.split(/\r\n|\n/).map(b => b.trim()).filter(b => b.length > 0);
             
             if(baris.length <= 1){
                 throw new Error("File CSV kosong atau format tidak sesuai.");
             }
 
-            // Deteksi pemisah kolom (';' atau ',')
             const pemisah = baris[0].includes(';') ? ';' : ',';
 
-            // Ambil header dan hilangkan tanda petik/spasi
             const header = baris[0].split(pemisah).map(h => h.replace(/["']/g, '').trim().toLowerCase());
             
             const idxNama = header.indexOf('nama');
@@ -826,10 +918,8 @@ document.getElementById("formImport").addEventListener("submit", async function(
             let totalTersimpan = 0;
 
             for(let i = 1; i < baris.length; i++){
-                // Pecah kolom dan bersihkan tanda petik
                 const kol = baris[i].split(pemisah).map(k => k.replace(/["']/g, '').trim());
                 
-                // Lewati jika nama santri kosong
                 if(!kol[idxNama]) continue;
 
                 const santriBaruRef = doc(collection(db, "santri"));
@@ -844,7 +934,6 @@ document.getElementById("formImport").addEventListener("submit", async function(
                 count++;
                 totalTersimpan++;
 
-                // Commit setiap 400 dokumen
                 if(count === 400){
                     await batch.commit();
                     batch = writeBatch(db);
