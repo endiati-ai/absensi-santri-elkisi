@@ -513,6 +513,8 @@ import {
     doc,
     query,
     where
+    where,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
@@ -756,10 +758,75 @@ async function siapkanSantri(){
        Jika database masih kosong,
        kita masukkan 5 santri contoh.
     */
+    const koleksi = collection(db, "santri");
+
+    // =========================
+    // DATA SANTRI DARI EXCEL
+    // =========================
+
+    const dataSantri = [
+
+        ["24-14-1764", "ABDUL RASYID AL HAFIDZ", "9A"],
+        ["24-14-1765", "ABDULLAH CHOIRUL AZZAM", "9A"],
+        ["24-14-1768", "ACHMAD RAFIZA MAULANA IHSAN", "9A"],
+        ["24-14-1769", "AHMAD FURQON", "9A"],
+        ["24-14-1775", "AKHSAN FAKHRI ABDILA ABIMANA", "9A"],
+        ["24-14-1778", "ARRABEL DANENDRA NISWARA", "9A"],
+        ["24-14-1779", "ARYA LUHUR DHARMA", "9A"],
+        ["24-14-1782", "AZIZI ABDULLAH UMAR", "9A"],
+        ["24-14-1788", "FADHIL YAQDAN NASRULLAH", "9A"],
+        ["24-14-1789", "FAHMI ANANDA FAJAR SUFANDY", "9A"],
+        ["24-14-1792", "FAUZAN RAFFA SETIAWAN", "9A"],
+        ["24-14-1793", "GANJAR RAMADHAN PUTRA S.", "9A"],
+        ["24-14-1795", "IMAM FAUZAN", "9A"],
+        ["24-14-1796", "KENZIE NAUFAL DZAKI HENDRIANTO", "9A"],
+        ["24-14-1802", "MOCH. DOMINICO BRIAN", "9A"],
+        ["24-14-1803", "MOCH. FARHAN KENZIE", "9A"],
+        ["24-14-1810", "MUHAMMAD ARYA ABRISAM", "9A"],
+        ["24-14-1814", "MUHAMMAD IBNU SINA", "9A"],
+        ["24-14-1816", "MUHAMMAD MUHANDIS ARRABI MUZAIK", "9A"],
+        ["24-14-1831", "RAFIF ABISATYA PRADANA", "9A"],
+        ["24-14-1833", "RAYNAR AZMI DZIKRA", "9A"],
+        ["24-14-1834", "RAYYAN AUFAA PURWANTO", "9A"],
+        ["24-14-1835", "VICKY RAHMANSYAH", "9A"],
+
+        ["24-14-1781", "AUFAA AL-FARUQ", "9 Azhari"],
+        ["24-14-1784", "BADARUL MUNIR AZHARI", "9 Azhari"],
+        ["24-14-1798", "MUHAMMAD ABDUL AZIS AR-RANTISI", "9 Azhari"],
+        ["24-14-1812", "MUHAMMAD FAKHRI MUMTAZ", "9 Azhari"]
+
+    ];
+
+
+    // =========================
+    // HAPUS 5 DATA CONTOH
+    // =========================
+
+    const snapshotLama = await getDocs(koleksi);
+
+    const namaContoh = [
+        "Abdullah Hafiz",
+        "Annas Wafie Nashrullah",
+        "Haritsah Anas",
+        "Ghazi Agha Attaqi",
+        "Syafiq Ubaidillah"
+    ];
+
+    for (const item of snapshotLama.docs) {
+
+        const data = item.data();
+
+        if (namaContoh.includes(data.nama)) {
+
+            await deleteDoc(
+                doc(db, "santri", item.id)
+            );
 
     if(snapshot.empty){
+        }
 
         const contoh = [
+    }
 
             {
                 nama:"Abdullah Hafiz",
@@ -772,32 +839,46 @@ async function siapkanSantri(){
                 kelas:"7 Azhari",
                 kamar:"-"
             },
+    // =========================
+    // MASUKKAN DATA SANTRI
+    // =========================
 
             {
                 nama:"Haritsah Anas",
                 kelas:"7 Azhari",
                 kamar:"-"
             },
+    for (const data of dataSantri) {
 
             {
                 nama:"Ghazi Agha Attaqi",
                 kelas:"7 Azhari",
                 kamar:"-"
             },
+        const nis = data[0];
+        const nama = data[1];
+        const kelas = data[2];
 
             {
                 nama:"Syafiq Ubaidillah",
                 kelas:"7 Azhari",
                 kamar:"-"
             }
+        const cari = query(
+            koleksi,
+            where("nis", "==", nis)
+        );
 
         ];
+        const hasil = await getDocs(cari);
 
 
         for(
             const data
             of contoh
         ){
+        // Jangan buat data ganda
+        if (hasil.empty) {
 
             await addDoc(
                 collection(
@@ -805,10 +886,19 @@ async function siapkanSantri(){
                     "santri"
                 ),
                 data
+                koleksi,
+                {
+                    nis: nis,
+                    nama: nama,
+                    kelas: kelas,
+                    status: "aktif",
+                    dibuatPada: new Date().toISOString()
+                }
             );
 
         }
 
+    }
 
         /*
            Ambil ulang setelah
@@ -822,7 +912,12 @@ async function siapkanSantri(){
                     "santri"
                 )
             );
+    // =========================
+    // AMBIL DATA TERBARU
+    // =========================
 
+    const snapshotBaru =
+        await getDocs(koleksi);
 
         santri =
             baru.docs.map(
@@ -835,6 +930,13 @@ async function siapkanSantri(){
     }
 
     else{
+    santri =
+        snapshotBaru.docs.map(
+            item => ({
+                id: item.id,
+                ...item.data()
+            })
+        );
 
         santri =
             snapshot.docs.map(
@@ -845,6 +947,10 @@ async function siapkanSantri(){
             );
 
     }
+    console.log(
+        "Jumlah santri:",
+        santri.length
+    );
 
 }
 
@@ -1231,148 +1337,3 @@ document.getElementById(
 
 </body>
 </html>
-
-Pada Min, 30 Agu 2026 pukul 09.30 subari endiati <endiati@gmail.com> menulis:
-
-
-
-Zul Kifly
-09.52 (55 menit yang lalu)
-where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-Zul Kifly
-10.01 (46 menit yang lalu)
-kepada saya
-
-Sepertinya pesan ini ditulis dalam Inggris
-async function siapkanSantri(){
-
-    const koleksi = collection(db, "santri");
-
-    // =========================
-    // DATA SANTRI DARI EXCEL
-    // =========================
-
-    const dataSantri = [
-
-        ["24-14-1764", "ABDUL RASYID AL HAFIDZ", "9A"],
-        ["24-14-1765", "ABDULLAH CHOIRUL AZZAM", "9A"],
-        ["24-14-1768", "ACHMAD RAFIZA MAULANA IHSAN", "9A"],
-        ["24-14-1769", "AHMAD FURQON", "9A"],
-        ["24-14-1775", "AKHSAN FAKHRI ABDILA ABIMANA", "9A"],
-        ["24-14-1778", "ARRABEL DANENDRA NISWARA", "9A"],
-        ["24-14-1779", "ARYA LUHUR DHARMA", "9A"],
-        ["24-14-1782", "AZIZI ABDULLAH UMAR", "9A"],
-        ["24-14-1788", "FADHIL YAQDAN NASRULLAH", "9A"],
-        ["24-14-1789", "FAHMI ANANDA FAJAR SUFANDY", "9A"],
-        ["24-14-1792", "FAUZAN RAFFA SETIAWAN", "9A"],
-        ["24-14-1793", "GANJAR RAMADHAN PUTRA S.", "9A"],
-        ["24-14-1795", "IMAM FAUZAN", "9A"],
-        ["24-14-1796", "KENZIE NAUFAL DZAKI HENDRIANTO", "9A"],
-        ["24-14-1802", "MOCH. DOMINICO BRIAN", "9A"],
-        ["24-14-1803", "MOCH. FARHAN KENZIE", "9A"],
-        ["24-14-1810", "MUHAMMAD ARYA ABRISAM", "9A"],
-        ["24-14-1814", "MUHAMMAD IBNU SINA", "9A"],
-        ["24-14-1816", "MUHAMMAD MUHANDIS ARRABI MUZAIK", "9A"],
-        ["24-14-1831", "RAFIF ABISATYA PRADANA", "9A"],
-        ["24-14-1833", "RAYNAR AZMI DZIKRA", "9A"],
-        ["24-14-1834", "RAYYAN AUFAA PURWANTO", "9A"],
-        ["24-14-1835", "VICKY RAHMANSYAH", "9A"],
-
-        ["24-14-1781", "AUFAA AL-FARUQ", "9 Azhari"],
-        ["24-14-1784", "BADARUL MUNIR AZHARI", "9 Azhari"],
-        ["24-14-1798", "MUHAMMAD ABDUL AZIS AR-RANTISI", "9 Azhari"],
-        ["24-14-1812", "MUHAMMAD FAKHRI MUMTAZ", "9 Azhari"]
-
-    ];
-
-
-    // =========================
-    // HAPUS 5 DATA CONTOH
-    // =========================
-
-    const snapshotLama = await getDocs(koleksi);
-
-    const namaContoh = [
-        "Abdullah Hafiz",
-        "Annas Wafie Nashrullah",
-        "Haritsah Anas",
-        "Ghazi Agha Attaqi",
-        "Syafiq Ubaidillah"
-    ];
-
-    for (const item of snapshotLama.docs) {
-
-        const data = item.data();
-
-        if (namaContoh.includes(data.nama)) {
-
-            await deleteDoc(
-                doc(db, "santri", item.id)
-            );
-
-        }
-
-    }
-
-
-    // =========================
-    // MASUKKAN DATA SANTRI
-    // =========================
-
-    for (const data of dataSantri) {
-
-        const nis = data[0];
-        const nama = data[1];
-        const kelas = data[2];
-
-        const cari = query(
-            koleksi,
-            where("nis", "==", nis)
-        );
-
-        const hasil = await getDocs(cari);
-
-
-        // Jangan buat data ganda
-        if (hasil.empty) {
-
-            await addDoc(
-                koleksi,
-                {
-                    nis: nis,
-                    nama: nama,
-                    kelas: kelas,
-                    status: "aktif",
-                    dibuatPada: new Date().toISOString()
-                }
-            );
-
-        }
-
-    }
-
-
-    // =========================
-    // AMBIL DATA TERBARU
-    // =========================
-
-    const snapshotBaru =
-        await getDocs(koleksi);
-
-
-    santri =
-        snapshotBaru.docs.map(
-            item => ({
-                id: item.id,
-                ...item.data()
-            })
-        );
-
-
-    console.log(
-        "Jumlah santri:",
-        santri.length
-    );
-
-}
