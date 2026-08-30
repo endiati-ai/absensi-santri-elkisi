@@ -533,6 +533,7 @@ const db = getFirestore(app);
 let santri = [];
 let absensiHariIni = {};
 let user = null;
+let jamPelajaran = "1";
 let tanggalHariIni = "";
 let kelasTerpilih = "";
 
@@ -592,7 +593,8 @@ async function ambilAbsensi(){
     try {
         const q = query(
             collection(db, "absensi"), 
-            where("tanggal", "==", tanggalHariIni)
+            where("tanggal", "==", tanggalHariIni),
+            where("jam", "==", jamPelajaran)
         );
         const snapshot = await getDocs(q);
         absensiHariIni = {};
@@ -718,11 +720,13 @@ function tampilkanKelolaSantri(keyword = ""){
 
 window.ubahStatus = async function(santriId, status){
     try{
-        const documentId = tanggalHariIni + "_" + santriId;
+        // ID dokumen dibuat unik gabungan tanggal, jam, dan ID santri
+        const documentId = `${tanggalHariIni}_Jam${jamPelajaran}_${santriId}`;
 
         await setDoc(doc(db, "absensi", documentId), {
             santriId: santriId,
             tanggal: tanggalHariIni,
+            jam: jamPelajaran,
             status: status,
             userId: user.uid,
             updatedAt: new Date().toISOString()
@@ -731,7 +735,7 @@ window.ubahStatus = async function(santriId, status){
         absensiHariIni[santriId] = status;
         filterSantri();
         hitungStatistik();
-        toast("Absensi tersimpan ✓");
+        toast(`Absensi Jam ke-${jamPelajaran} tersimpan ✓`);
     } catch(error){
         toast("Gagal menyimpan");
         tampilError(error.message);
