@@ -358,7 +358,7 @@ body{
 
 <main class="container">
 
-    <!-- HALAMAN BERANDA / ABSENSI -->
+    <!-- 1. HALAMAN BERANDA / ABSENSI -->
     <div id="pageBeranda">
         <section class="summary">
             <div class="summary-title">Kehadiran Hari Ini</div>
@@ -393,31 +393,31 @@ body{
             </select>
 
             <select id="filterJam" class="search" style="margin-top:10px; background:#e5f2ef; font-weight:bold; color:#075E54;">
-    <option value="1">Jam Pelajaran 1</option>
-    <option value="2">Jam Pelajaran 2</option>
-    <option value="3">Jam Pelajaran 3</option>
-    <option value="4">Jam Pelajaran 4</option>
-    <option value="5">Jam Pelajaran 5</option>
-    <option value="6">Jam Pelajaran 6</option>
-    <option value="7">Jam Pelajaran 7</option>
-    <option value="8">Jam Pelajaran 8</option>
-    <option value="9">Jam Pelajaran 9</option>
-    <option value="1">Jam Pelajaran Subuh</option>
-</select>
+                <option value="1">Jam 1</option>
+                <option value="2">Jam 2</option>
+                <option value="3">Jam 3</option>
+                <option value="4">Jam 4</option>
+                <option value="5">Jam 5</option>
+                <option value="6">Jam 6</option>
+                <option value="7">Jam 7</option>
+                <option value="8">Jam 8</option>
+                <option value="9">Jam 9</option>
+                <option value="1">Jam subuh </option>
+            </select>
+
             <div id="studentList" style="margin-top: 10px;">
                 <div class="loading">Menghubungkan ke Firebase...</div>
             </div>
         </section>
     </div>
 
-    <!-- HALAMAN KELOLA SANTRI -->
+    <!-- 2. HALAMAN KELOLA SANTRI -->
     <div id="pageSantri" style="display:none;">
         <section class="section" style="margin-top:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                 <div class="section-title" style="margin-bottom:0;">Kelola Santri</div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button class="btn-action btn-danger" onclick="bukaModalHapusKelas()">🗑️ Hapus Per Kelas</button>
-                    <button class="btn-action btn-edit" onclick="bukaModalRekap()">📊 Rekap Laporan</button>
                     <button class="btn-action btn-import" onclick="bukaModalImport()">📥 Import CSV</button>
                     <button class="btn-action btn-edit" onclick="bukaModalSantri()">+ Tambah</button>
                 </div>
@@ -431,12 +431,58 @@ body{
         </section>
     </div>
 
+    <!-- 3. HALAMAN LAPORAN (BARU) -->
+    <div id="pageLaporan" style="display:none;">
+        <section class="section" style="margin-top:0;">
+            <div class="section-title">📊 Rekap Laporan Absensi</div>
+            
+            <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
+                <div class="form-group">
+                    <label>Jenis Laporan</label>
+                    <select id="jenisLaporanNav" class="input-field" onchange="sesuaikanInputLaporanNav()">
+                        <option value="harian">Harian (Per Jam 1-9)</option>
+                        <option value="mingguan">Mingguan</option>
+                        <option value="bulanan">Bulanan</option>
+                    </select>
+                </div>
+
+                <!-- Input Tanggal Harian/Mingguan -->
+                <div class="form-group" id="groupTanggalNav">
+                    <label>Pilih Tanggal</label>
+                    <input type="date" id="tglLaporanNav" class="input-field">
+                </div>
+
+                <!-- Input Bulan -->
+                <div class="form-group" id="groupBulanNav" style="display:none;">
+                    <label>Pilih Bulan & Tahun</label>
+                    <input type="month" id="blnLaporanNav" class="input-field">
+                </div>
+
+                <div class="form-group">
+                    <label>Filter Kelas</label>
+                    <select id="kelasLaporanNav" class="input-field">
+                        <option value="">Semua Kelas</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="tampilkanHasilLaporan()" style="margin-top:5px;">
+                    Tampilkan Rekap Laporan
+                </button>
+            </div>
+
+            <!-- Tempat Menampilkan Tabel Laporan -->
+            <div id="areaHasilLaporan"></div>
+        </section>
+    </div>
+
     <div id="errorBox" class="error" style="display:none"></div>
 </main>
 
 <nav class="bottom-nav">
+    <nav class="bottom-nav">
     <div class="nav-item active" onclick="pindahHalaman('Beranda')"><span class="nav-icon">🏠</span>Beranda</div>
     <div class="nav-item" onclick="pindahHalaman('Santri')"><span class="nav-icon">👨‍🎓</span>Santri</div>
+    <div class="nav-item" onclick="pindahHalaman('Laporan')"><span class="nav-icon">📊</span>Laporan</div>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -810,23 +856,63 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-// NAVIGASI
+// NAVIGASI HALAMAN (Beranda, Santri, Laporan)
 window.pindahHalaman = function(halaman){
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
 
+    // Sembunyikan semua halaman
+    document.getElementById('pageBeranda').style.display = 'none';
+    document.getElementById('pageSantri').style.display = 'none';
+    document.getElementById('pageLaporan').style.display = 'none';
+
     if(halaman === 'Beranda'){
         document.getElementById('pageBeranda').style.display = 'block';
-        document.getElementById('pageSantri').style.display = 'none';
         navItems[0].classList.add('active');
         filterSantri();
         hitungStatistik();
     } else if(halaman === 'Santri'){
-        document.getElementById('pageBeranda').style.display = 'none';
         document.getElementById('pageSantri').style.display = 'block';
         navItems[1].classList.add('active');
         tampilkanKelolaSantri();
+    } else if(halaman === 'Laporan'){
+        document.getElementById('pageLaporan').style.display = 'block';
+        navItems[2].classList.add('active');
+        siapkanHalamanLaporan();
     }
+};
+
+// Fungsi penyesuaian bentuk input Laporan
+window.sesuaikanInputLaporanNav = function(){
+    const jenis = document.getElementById("jenisLaporanNav").value;
+    const groupTgl = document.getElementById("groupTanggalNav");
+    const groupBln = document.getElementById("groupBulanNav");
+
+    if(jenis === "bulanan"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "block";
+    } else {
+        groupTgl.style.display = "block";
+        groupBln.style.display = "none";
+    }
+};
+
+// Fungsi menyiapkan isi filter saat menu Laporan dibuka
+function siapkanHalamanLaporan(){
+    document.getElementById("tglLaporanNav").value = tanggalHariIni;
+    const skrg = new Date();
+    const formatBulan = skrg.getFullYear() + "-" + String(skrg.getMonth() + 1).padStart(2, '0');
+    document.getElementById("blnLaporanNav").value = formatBulan;
+
+    const selectLaporan = document.getElementById("kelasLaporanNav");
+    const selectFilter = document.getElementById("filterKelas");
+    selectLaporan.innerHTML = selectFilter.innerHTML;
+}
+
+window.tampilkanHasilLaporan = function(){
+    const area = document.getElementById("areaHasilLaporan");
+    area.innerHTML = `<div class="loading">Memuat rekap data laporan...</div>`;
+    // Pada tahap berikutnya kita isi logika perhitungan tabel rekap di sini
 };
 
 // MODAL MANUAL
