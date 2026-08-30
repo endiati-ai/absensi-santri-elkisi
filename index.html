@@ -404,7 +404,10 @@ body{
                 <option value="9">Jam 9</option>
                 <option value="10">Jam subuh </option>
             </select>
-
+<button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:10px; background:#075E54; display:flex; align-items:center; justify-content:center; gap:6px;">
+    ⚡ Hadirkan Semua Santri
+</button>
+            
             <div id="studentList" style="margin-top: 10px;">
                 <div class="loading">Menghubungkan ke Firebase...</div>
             </div>
@@ -1364,7 +1367,71 @@ window.sesuaikanInputRekap = function(){
         groupBln.style.display = "none";
     }
 };
-    
+
+    // ... kode-kode JavaScript sebelumnya ...
+
+// FUNGSI HADIRKAN SEMUA SANTRI
+window.hadirkanSemuaSantri = async function(){
+    const jamTerpilih = document.getElementById("filterJam").value;
+    const kelasTerpilih = document.getElementById("filterKelas").value;
+    const kataKunci = document.getElementById("search").value.toLowerCase();
+
+    // 1. Filter santri yang sedang tampil di layar
+    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
+
+    if(kelasTerpilih){
+        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
+    }
+    if(kataKunci){
+        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
+    }
+
+    if(daftarTarget.length === 0){
+        toast("Tidak ada santri yang dapat diproses!");
+        return;
+    }
+
+    // Konfirmasi dari user
+    if(!confirm(`Apakah Anda yakin ingin menandai HADIR untuk ${daftarTarget.length} santri pada Jam ke-${jamTerpilih}?`)){
+        return;
+    }
+
+    try {
+        // 2. Simpan/Update status HADIR ke Firestore untuk setiap santri
+        const janjiSimpan = daftarTarget.map(async (s) => {
+            const docId = `${s.id}_${tanggalHariIni}_${jamTerpilih}`;
+            const refAbsen = doc(db, "absensi", docId);
+            
+            await setDoc(refAbsen, {
+                santriId: s.id,
+                nama: s.nama,
+                kelas: s.kelas,
+                tanggal: tanggalHariIni,
+                jam: jamTerpilih,
+                status: "hadir",
+                waktu: new Date().toISOString()
+            });
+        });
+
+        // Tunggu semua proses penyimpanan selesai
+        await Promise.all(janjiSimpan);
+
+        toast(`Berhasil menandai HADIR untuk ${daftarTarget.length} santri!`);
+        
+        // Refresh daftar dan statistik
+        await ambilAbsensi();
+        filterSantri();
+        hitungStatistik();
+
+    } catch(err) {
+        toast("Gagal memproses: " + err.message);
+    }
+};
+
+</script> <!-- 👈 TEMPELKAN TEPAT DI ATAS INI -->
+</body>
+</html>
+
 </script>
 
 </body>
