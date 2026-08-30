@@ -417,6 +417,7 @@ body{
                 <div class="section-title" style="margin-bottom:0;">Kelola Santri</div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button class="btn-action btn-danger" onclick="bukaModalHapusKelas()">🗑️ Hapus Per Kelas</button>
+                    <button class="btn-action btn-edit" onclick="bukaModalRekap()">📊 Rekap Laporan</button>
                     <button class="btn-action btn-import" onclick="bukaModalImport()">📥 Import CSV</button>
                     <button class="btn-action btn-edit" onclick="bukaModalSantri()">+ Tambah</button>
                 </div>
@@ -489,6 +490,47 @@ body{
     </div>
 </div>
 
+    <!-- MODAL REKAP LAPORAN -->
+<div class="modal" id="modalRekap">
+    <div class="modal-content">
+        <div class="modal-title">📊 Rekap Laporan Absensi</div>
+        <form id="formRekap">
+            <div class="form-group">
+                <label>Jenis Laporan</label>
+                <select id="jenisLaporan" class="input-field" onchange="sesuaikanInputRekap()">
+                    <option value="harian">Harian (Per Jam Pelajaran)</option>
+                    <option value="mingguan">Mingguan</option>
+                    <option value="bulanan">Bulanan</option>
+                </select>
+            </div>
+
+            <!-- Input Tanggal Harian/Mingguan -->
+            <div class="form-group" id="groupTanggal">
+                <label>Pilih Tanggal</label>
+                <input type="date" id="tglRekap" class="input-field">
+            </div>
+
+            <!-- Input Bulan -->
+            <div class="form-group" id="groupBulan" style="display:none;">
+                <label>Pilih Bulan & Tahun</label>
+                <input type="month" id="blnRekap" class="input-field">
+            </div>
+
+            <div class="form-group">
+                <label>Filter Kelas</label>
+                <select id="kelasRekap" class="input-field">
+                    <option value="">Semua Kelas</option>
+                </select>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="button" class="btn-primary btn-cancel" onclick="tutupModalRekap()">Batal</button>
+                <button type="submit" class="btn-primary" style="margin-top:0;">Tampilkan Laporan</button>
+            </div>
+        </form>
+    </div>
+</div>
+    
 <!-- MODAL HAPUS PER KELAS -->
 <div class="modal" id="modalHapusKelas">
     <div class="modal-content">
@@ -1054,6 +1096,49 @@ document.getElementById("filterKelas").addEventListener("change", function(){
     filterSantri();
     hitungStatistik();
 });
+   // ==========================================
+// KODE UNTUK MODAL REKAP LAPORAN
+// ==========================================
+
+// 1. Fungsi untuk membuka jendela modal rekap
+window.bukaModalRekap = function(){
+    siapkanFilterKelas();
+    
+    // Set default tanggal hari ini & bulan ini
+    document.getElementById("tglRekap").value = tanggalHariIni;
+    const skrg = new Date();
+    const formatBulan = skrg.getFullYear() + "-" + String(skrg.getMonth() + 1).padStart(2, '0');
+    document.getElementById("blnRekap").value = formatBulan;
+    
+    // Salin daftar kelas ke pilihan di modal rekap
+    const selectRekap = document.getElementById("kelasRekap");
+    const selectFilter = document.getElementById("filterKelas");
+    selectRekap.innerHTML = selectFilter.innerHTML;
+
+    // Tampilkan jendela modal
+    document.getElementById("modalRekap").style.display = "flex";
+};
+
+// 2. Fungsi untuk menutup jendela modal rekap
+window.tutupModalRekap = function(){
+    document.getElementById("modalRekap").style.display = "none";
+};
+
+// 3. Fungsi untuk menyesuaikan pilihan (Harian/Mingguan/Bulanan)
+window.sesuaikanInputRekap = function(){
+    const jenis = document.getElementById("jenisLaporan").value;
+    const groupTgl = document.getElementById("groupTanggal");
+    const groupBln = document.getElementById("groupBulan");
+
+    if(jenis === "bulanan"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "block";
+    } else {
+        groupTgl.style.display = "block";
+        groupBln.style.display = "none";
+    }
+};
+    
 </script>
 
 </body>
