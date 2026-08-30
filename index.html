@@ -1036,6 +1036,16 @@ window.toggleStatusSantri = async function(id){
 
 // EVENT LISTENERS
 document.getElementById("search").addEventListener("input", filterSantri);
+    // Listener ketika jam pelajaran diubah dari dropdown
+document.getElementById("filterJam").addEventListener("change", async function(){
+    jamPelajaran = this.value;
+    const list = document.getElementById("studentList");
+    list.innerHTML = `<div class="loading">Memuat data Jam ke-${jamPelajaran}...</div>`;
+    
+    await ambilAbsensi();
+    filterSantri();
+    hitungStatistik();
+});
 document.getElementById("searchManage").addEventListener("input", function(){
     tampilkanKelolaSantri(this.value);
 });
