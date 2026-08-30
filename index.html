@@ -103,7 +103,7 @@ body{
     margin-bottom:12px;
 }
 
-.search{
+.search, .input-field{
     width:100%;
     padding:14px 16px;
     border:none;
@@ -112,6 +112,24 @@ body{
     font-size:14px;
     outline:none;
     box-shadow:0 3px 12px rgba(0,0,0,.04);
+}
+
+.btn-primary{
+    width:100%;
+    padding:14px;
+    background:#075E54;
+    color:white;
+    border:none;
+    border-radius:14px;
+    font-weight:bold;
+    font-size:14px;
+    cursor:pointer;
+    margin-top:10px;
+    box-shadow:0 4px 12px rgba(7,94,84,0.2);
+}
+
+.btn-primary:active{
+    transform:scale(0.98);
 }
 
 .student{
@@ -171,6 +189,19 @@ body{
     cursor:pointer;
 }
 
+.btn-action{
+    border:none;
+    padding:6px 10px;
+    border-radius:8px;
+    font-size:12px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-edit{ background:#dcecff; color:#0056b3; }
+.btn-toggle{ background:#ffe1e1; color:#a00000; }
+.btn-toggle.active-status{ background:#dff5e8; color:#0e6231; }
+
 .present{ background:#dff5e8; }
 .permission{ background:#fff2c9; }
 .sick{ background:#dcecff; }
@@ -178,10 +209,6 @@ body{
 
 .status.active{
     outline:2px solid #075E54;
-}
-
-.status:disabled{
-    opacity:.5;
 }
 
 .loading{
@@ -217,6 +244,8 @@ body{
     text-align:center;
     font-size:11px;
     color:#7c8582;
+    cursor:pointer;
+    flex:1;
 }
 
 .nav-item.active{
@@ -244,6 +273,59 @@ body{
     z-index:200;
 }
 
+/* Modal */
+.modal{
+    display:none;
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.5);
+    z-index:300;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal-content{
+    background:white;
+    width:100%;
+    max-width:400px;
+    border-radius:20px;
+    padding:20px;
+}
+
+.modal-title{
+    font-weight:bold;
+    font-size:16px;
+    margin-bottom:15px;
+}
+
+.form-group{
+    margin-bottom:12px;
+}
+
+.form-group label{
+    display:block;
+    font-size:12px;
+    color:#68736f;
+    margin-bottom:5px;
+}
+
+.modal-buttons{
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+}
+
+.btn-cancel{
+    background:#e5e8e7;
+    color:#17201e;
+}
+
+.student.inactive{
+    opacity:0.6;
+    background:#f0f0f0;
+}
+
 @media(max-width:400px){
     .student{ padding:12px; }
     .student-name{ font-size:13px; }
@@ -263,60 +345,103 @@ body{
 </header>
 
 <main class="container">
-    <section class="summary">
-        <div class="summary-title">Kehadiran Hari Ini</div>
-        <div class="percent" id="persentase">0%</div>
 
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-number" id="hadir">0</div>
-                <div class="stat-label">Hadir</div>
+    <!-- HALAMAN BERANDA / ABSENSI -->
+    <div id="pageBeranda">
+        <section class="summary">
+            <div class="summary-title">Kehadiran Hari Ini</div>
+            <div class="percent" id="persentase">0%</div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" id="hadir">0</div>
+                    <div class="stat-label">Hadir</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="izin">0</div>
+                    <div class="stat-label">Izin</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="sakit">0</div>
+                    <div class="stat-label">Sakit</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="alpha">0</div>
+                    <div class="stat-label">Alpha</div>
+                </div>
             </div>
-            <div class="stat">
-                <div class="stat-number" id="izin">0</div>
-                <div class="stat-label">Izin</div>
+        </section>
+
+        <section class="section">
+            <div class="section-title">Absensi Santri</div>
+
+            <input class="search" type="text" id="search" placeholder="🔍 Cari nama santri...">
+            <select id="filterKelas" class="search" style="margin-top:10px;">
+                <option value="">Semua Kelas</option>
+            </select>
+
+            <div id="studentList" style="margin-top: 10px;">
+                <div class="loading">Menghubungkan ke Firebase...</div>
             </div>
-            <div class="stat">
-                <div class="stat-number" id="sakit">0</div>
-                <div class="stat-label">Sakit</div>
+        </section>
+    </div>
+
+    <!-- HALAMAN KELOLA SANTRI -->
+    <div id="pageSantri" style="display:none;">
+        <section class="section" style="margin-top:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div class="section-title" style="margin-bottom:0;">Kelola Santri</div>
+                <button class="btn-action btn-edit" style="padding:10px 14px;" onclick="bukaModalSantri()">+ Tambah</button>
             </div>
-            <div class="stat">
-                <div class="stat-number" id="alpha">0</div>
-                <div class="stat-label">Alpha</div>
+
+            <input class="search" type="text" id="searchManage" placeholder="🔍 Cari nama santri...">
+            
+            <div id="studentManageList" style="margin-top: 10px;">
+                <div class="loading">Memuat data santri...</div>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
-    <section class="section">
-        <div class="section-title">Absensi Santri</div>
-
-        <input class="search" type="text" id="search" placeholder="🔍 Cari nama santri...">
-        <select id="filterKelas" class="search" style="margin-top:10px;">
-            <option value="">Semua Kelas</option>
-        </select>
-
-        <!-- Elemen kontainer daftar santri -->
-        <div id="studentList" style="margin-top: 10px;">
-            <div class="loading">Menghubungkan ke Firebase...</div>
-        </div>
-
-        <div id="errorBox" class="error" style="display:none"></div>
-    </section>
+    <div id="errorBox" class="error" style="display:none"></div>
 </main>
 
 <nav class="bottom-nav">
-    <div class="nav-item active"><span class="nav-icon">🏠</span>Beranda</div>
-    <div class="nav-item"><span class="nav-icon">👨‍🎓</span>Santri</div>
-    <div class="nav-item"><span class="nav-icon">📊</span>Laporan</div>
-    <div class="nav-item"><span class="nav-icon">⚙️</span>Pengaturan</div>
+    <div class="nav-item active" onclick="pindahHalaman('Beranda')"><span class="nav-icon">🏠</span>Beranda</div>
+    <div class="nav-item" onclick="pindahHalaman('Santri')"><span class="nav-icon">👨‍🎓</span>Santri</div>
 </nav>
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL TAMBAH / EDIT SANTRI -->
+<div class="modal" id="modalSantri">
+    <div class="modal-content">
+        <div class="modal-title" id="modalTitle">Tambah Santri</div>
+        <form id="formSantri">
+            <input type="hidden" id="santriId">
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="namaSantri" class="input-field" required placeholder="Masukkan nama santri">
+            </div>
+            <div class="form-group">
+                <label>Kelas</label>
+                <input type="text" id="kelasSantri" class="input-field" required placeholder="Contoh: 7 Azhari">
+            </div>
+            <div class="form-group">
+                <label>Kamar</label>
+                <input type="text" id="kamarSantri" class="input-field" placeholder="Contoh: Kamar 01 / -">
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-primary btn-cancel" onclick="tutupModalSantri()">Batal</button>
+                <button type="submit" class="btn-primary" style="margin-top:0;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, addDoc, setDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB2zc2-YwgauMiWDlJHMpk00nf7qsMJtnY",
@@ -338,15 +463,11 @@ let user = null;
 let tanggalHariIni = "";
 let kelasTerpilih = "";
 
-// Tanggal Hari Ini
 const sekarang = new Date();
 tanggalHariIni = sekarang.toLocaleDateString("sv-SE");
 
 document.getElementById("tanggal").innerText = sekarang.toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
+    weekday: "long", day: "numeric", month: "long", year: "numeric"
 });
 
 function toast(pesan){
@@ -389,11 +510,11 @@ async function siapkanSantri(){
 
     if(snapshot.empty){
         const contoh = [
-            { nama:"Abdullah Hafiz", kelas:"7 Azhari", kamar:"-" },
-            { nama:"Annas Wafie Nashrullah", kelas:"7 Azhari", kamar:"-" },
-            { nama:"Haritsah Anas", kelas:"7 Azhari", kamar:"-" },
-            { nama:"Ghazi Agha Attaqi", kelas:"7 Azhari", kamar:"-" },
-            { nama:"Syafiq Ubaidillah", kelas:"7 Azhari", kamar:"-" }
+            { nama:"Abdullah Hafiz", kelas:"7 Azhari", kamar:"-", status:"aktif" },
+            { nama:"Annas Wafie Nashrullah", kelas:"7 Azhari", kamar:"-", status:"aktif" },
+            { nama:"Haritsah Anas", kelas:"7 Azhari", kamar:"-", status:"aktif" },
+            { nama:"Ghazi Agha Attaqi", kelas:"7 Azhari", kamar:"-", status:"aktif" },
+            { nama:"Syafiq Ubaidillah", kelas:"7 Azhari", kamar:"-", status:"aktif" }
         ];
 
         for(const data of contoh){
@@ -401,9 +522,9 @@ async function siapkanSantri(){
         }
 
         const baru = await getDocs(collection(db, "santri"));
-        santri = baru.docs.map(item => ({ id: item.id, ...item.data() }));
+        santri = baru.docs.map(item => ({ id: item.id, status: "aktif", ...item.data() }));
     } else {
-        santri = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+        santri = snapshot.docs.map(item => ({ id: item.id, status: "aktif", ...item.data() }));
     }
 }
 
@@ -446,7 +567,8 @@ function filterSantri(){
     const hasil = santri.filter(s => {
         const cocokNama = s.nama.toLowerCase().includes(keyword);
         const cocokKelas = !kelas || s.kelas === kelas;
-        return cocokNama && cocokKelas;
+        const aktif = s.status !== "nonaktif";
+        return cocokNama && cocokKelas && aktif;
     });
 
     tampilkanSantri(hasil);
@@ -456,12 +578,14 @@ function tampilkanSantri(data){
     const list = document.getElementById("studentList");
     list.innerHTML = "";
 
-    if(data.length === 0){
-        list.innerHTML = `<div class="loading">Santri tidak ditemukan.</div>`;
+    const santriAktif = data.filter(s => s.status !== "nonaktif");
+
+    if(santriAktif.length === 0){
+        list.innerHTML = `<div class="loading">Santri tidak ditemukan / tidak aktif.</div>`;
         return;
     }
 
-    data.forEach((s) => {
+    santriAktif.forEach((s) => {
         const status = absensiHariIni[s.id] || "";
         const initial = s.nama.charAt(0).toUpperCase();
 
@@ -479,6 +603,42 @@ function tampilkanSantri(data){
                 <button class="status permission ${status==="izin"?"active":""}" onclick="ubahStatus('${s.id}', 'izin')">🟡</button>
                 <button class="status sick ${status==="sakit"?"active":""}" onclick="ubahStatus('${s.id}', 'sakit')">🔵</button>
                 <button class="status absent ${status==="alpha"?"active":""}" onclick="ubahStatus('${s.id}', 'alpha')">🔴</button>
+            </div>
+        </div>
+        `;
+    });
+}
+
+// TAMPILKAN DAFTAR KELOLA SANTRI
+function tampilkanKelolaSantri(keyword = ""){
+    const list = document.getElementById("studentManageList");
+    list.innerHTML = "";
+
+    const hasil = santri.filter(s => s.nama.toLowerCase().includes(keyword.toLowerCase().trim()));
+
+    if(hasil.length === 0){
+        list.innerHTML = `<div class="loading">Data santri tidak ditemukan.</div>`;
+        return;
+    }
+
+    hasil.forEach((s) => {
+        const initial = s.nama.charAt(0).toUpperCase();
+        const isAktif = s.status !== "nonaktif";
+
+        list.innerHTML += `
+        <div class="student ${isAktif ? '' : 'inactive'}">
+            <div class="student-info">
+                <div class="avatar">${initial}</div>
+                <div>
+                    <div class="student-name">${s.nama} ${isAktif ? '' : '(Nonaktif)'}</div>
+                    <div class="student-class">${s.kelas} | Kamar: ${s.kamar || '-'}</div>
+                </div>
+            </div>
+            <div class="status-buttons">
+                <button class="btn-action btn-edit" onclick="bukaModalSantri('${s.id}')">Edit</button>
+                <button class="btn-action btn-toggle ${isAktif ? '' : 'active-status'}" onclick="toggleStatusSantri('${s.id}')">
+                    ${isAktif ? 'Nonaktif' : 'Aktifkan'}
+                </button>
             </div>
         </div>
         `;
@@ -510,9 +670,10 @@ window.ubahStatus = async function(santriId, status){
 function hitungStatistik(){
     let hadir = 0, izin = 0, sakit = 0, alpha = 0;
 
+    const santriAktif = santri.filter(s => s.status !== "nonaktif");
     const daftar = kelasTerpilih 
-        ? santri.filter(s => s.kelas === kelasTerpilih) 
-        : santri;
+        ? santriAktif.filter(s => s.kelas === kelasTerpilih) 
+        : santriAktif;
 
     daftar.forEach(s => {
         const status = absensiHariIni[s.id];
@@ -532,8 +693,114 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-document.getElementById("search").addEventListener("input", filterSantri);
+// NAVIGASI
+window.pindahHalaman = function(halaman){
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(el => el.classList.remove('active'));
 
+    if(halaman === 'Beranda'){
+        document.getElementById('pageBeranda').style.display = 'block';
+        document.getElementById('pageSantri').style.display = 'none';
+        navItems[0].classList.add('active');
+        filterSantri();
+        hitungStatistik();
+    } else if(halaman === 'Santri'){
+        document.getElementById('pageBeranda').style.display = 'none';
+        document.getElementById('pageSantri').style.display = 'block';
+        navItems[1].classList.add('active');
+        tampilkanKelolaSantri();
+    }
+};
+
+// MODAL SANTRI
+window.bukaModalSantri = function(id = null){
+    const modal = document.getElementById("modalSantri");
+    const title = document.getElementById("modalTitle");
+    const form = document.getElementById("formSantri");
+
+    form.reset();
+    document.getElementById("santriId").value = "";
+
+    if(id){
+        const data = santri.find(s => s.id === id);
+        if(data){
+            title.innerText = "Edit Santri";
+            document.getElementById("santriId").value = data.id;
+            document.getElementById("namaSantri").value = data.nama;
+            document.getElementById("kelasSantri").value = data.kelas;
+            document.getElementById("kamarSantri").value = data.kamar || "-";
+        }
+    } else {
+        title.innerText = "Tambah Santri";
+    }
+
+    modal.style.display = "flex";
+};
+
+window.tutupModalSantri = function(){
+    document.getElementById("modalSantri").style.display = "none";
+};
+
+// SIMPAN TAMBAH / EDIT SANTRI
+document.getElementById("formSantri").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const id = document.getElementById("santriId").value;
+    const nama = document.getElementById("namaSantri").value.trim();
+    const kelas = document.getElementById("kelasSantri").value.trim();
+    const kamar = document.getElementById("kamarSantri").value.trim();
+
+    try{
+        if(id){
+            await updateDoc(doc(db, "santri", id), { nama, kelas, kamar });
+            const index = santri.findIndex(s => s.id === id);
+            if(index !== -1){
+                santri[index].nama = nama;
+                santri[index].kelas = kelas;
+                santri[index].kamar = kamar;
+            }
+            toast("Data santri diperbarui ✓");
+        } else {
+            const docRef = await addDoc(collection(db, "santri"), {
+                nama, kelas, kamar, status: "aktif"
+            });
+            santri.push({ id: docRef.id, nama, kelas, kamar, status: "aktif" });
+            toast("Santri berhasil ditambahkan ✓");
+        }
+
+        siapkanFilterKelas();
+        tutupModalSantri();
+        tampilkanKelolaSantri(document.getElementById("searchManage").value);
+    } catch(err){
+        toast("Gagal menyimpan data");
+        tampilError(err.message);
+    }
+});
+
+// TOGGLE STATUS AKTIF / NONAKTIF
+window.toggleStatusSantri = async function(id){
+    const target = santri.find(s => s.id === id);
+    if(!target) return;
+
+    const statusBaru = target.status === "nonaktif" ? "aktif" : "nonaktif";
+
+    try {
+        await updateDoc(doc(db, "santri", id), { status: statusBaru });
+        target.status = statusBaru;
+        
+        toast(`Santri berhasil di-${statusBaru === "aktif" ? "aktifkan" : "nonaktifkan"} ✓`);
+        tampilkanKelolaSantri(document.getElementById("searchManage").value);
+        siapkanFilterKelas();
+    } catch(err) {
+        toast("Gagal mengubah status");
+        tampilError(err.message);
+    }
+};
+
+// EVENT LISTENERS
+document.getElementById("search").addEventListener("input", filterSantri);
+document.getElementById("searchManage").addEventListener("input", function(){
+    tampilkanKelolaSantri(this.value);
+});
 document.getElementById("filterKelas").addEventListener("change", function(){
     kelasTerpilih = this.value;
     filterSantri();
