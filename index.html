@@ -1370,7 +1370,7 @@ window.sesuaikanInputRekap = function(){
 
     // ... kode-kode JavaScript sebelumnya ...
 
-// FUNGSI HADIRKAN SEMUA SANTRI
+// FUNGSI HADIRKAN SEMUA SANTRI (SEKALI KLIK DENGAN CEPAT)
 window.hadirkanSemuaSantri = async function(){
     const jamTerpilih = document.getElementById("filterJam").value;
     const kelasTerpilih = document.getElementById("filterKelas").value;
@@ -1391,35 +1391,33 @@ window.hadirkanSemuaSantri = async function(){
         return;
     }
 
-    // Konfirmasi dari user
-    if(!confirm(`Apakah Anda yakin ingin menandai HADIR untuk ${daftarTarget.length} santri pada Jam ke-${jamTerpilih}?`)){
-        return;
-    }
-
     try {
-        // 2. Simpan/Update status HADIR ke Firestore untuk setiap santri
+        // Tampilkan indikator loading cepat di tombol
+        toast("Sedang memproses...");
+
+        // 2. Simpan status HADIR untuk setiap santri
         const janjiSimpan = daftarTarget.map(async (s) => {
-            const docId = `${s.id}_${tanggalHariIni}_${jamTerpilih}`;
-            const refAbsen = doc(db, "absensi", docId);
+            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
+            const refAbsen = doc(db, "absensi", documentId);
             
             await setDoc(refAbsen, {
                 santriId: s.id,
-                nama: s.nama,
-                kelas: s.kelas,
                 tanggal: tanggalHariIni,
                 jam: jamTerpilih,
                 status: "hadir",
-                waktu: new Date().toISOString()
+                userId: user.uid,
+                updatedAt: new Date().toISOString()
             });
+
+            // Update memori lokal
+            absensiHariIni[s.id] = "hadir";
         });
 
-        // Tunggu semua proses penyimpanan selesai
         await Promise.all(janjiSimpan);
 
-        toast(`Berhasil menandai HADIR untuk ${daftarTarget.length} santri!`);
+        toast(`Semua santri (${daftarTarget.length}) langsung HADIR ✓`);
         
         // Refresh daftar dan statistik
-        await ambilAbsensi();
         filterSantri();
         hitungStatistik();
 
@@ -1427,10 +1425,6 @@ window.hadirkanSemuaSantri = async function(){
         toast("Gagal memproses: " + err.message);
     }
 };
-
-</script> <!-- 👈 TEMPELKAN TEPAT DI ATAS INI -->
-</body>
-</html>
 
 </script>
 
