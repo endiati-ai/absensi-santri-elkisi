@@ -784,7 +784,7 @@ window.tutupModalImport = function(){
     document.getElementById("modalImport").style.display = "none";
 };
 
-// PROSES IMPORT CSV (Mendukung pemisah koma ',' maupun titik koma ';')
+// PROSES IMPORT CSV (Sudah diperbaiki untuk menangani pemisah ekstra & spasi)
 document.getElementById("formImport").addEventListener("submit", async function(e){
     e.preventDefault();
     const fileInput = document.getElementById("fileCsv");
@@ -800,22 +800,25 @@ document.getElementById("formImport").addEventListener("submit", async function(
     reader.onload = async function(evt){
         try {
             const teks = evt.target.result;
-            const baris = teks.split(/\r\n|\n/);
+            // Pecah baris dan bersihkan dari baris kosong
+            const baris = teks.split(/\r\n|\n/).map(b => b.trim()).filter(b => b.length > 0);
             
             if(baris.length <= 1){
                 throw new Error("File CSV kosong atau format tidak sesuai.");
             }
 
-            // Otomatis deteksi apakah pemisah kolom menggunakan ';' atau ','
+            // Deteksi pemisah kolom (';' atau ',')
             const pemisah = baris[0].includes(';') ? ';' : ',';
 
-            const header = baris[0].split(pemisah).map(h => h.trim().toLowerCase());
+            // Ambil header dan hilangkan tanda petik/spasi
+            const header = baris[0].split(pemisah).map(h => h.replace(/["']/g, '').trim().toLowerCase());
+            
             const idxNama = header.indexOf('nama');
             const idxKelas = header.indexOf('kelas');
             const idxKamar = header.indexOf('kamar');
 
             if(idxNama === -1 || idxKelas === -1){
-                throw new Error("Header CSV harus memiliki kolom 'nama' dan 'kelas'.");
+                throw new Error("Header CSV tidak ditemukan. Pastikan baris 1 berisi: nama;kelas;kamar");
             }
 
             let batch = writeBatch(db);
@@ -823,13 +826,16 @@ document.getElementById("formImport").addEventListener("submit", async function(
             let totalTersimpan = 0;
 
             for(let i = 1; i < baris.length; i++){
-                const kol = baris[i].split(pemisah).map(k => k.trim());
-                if(kol.length < 2 || !kol[idxNama]) continue;
+                // Pecah kolom dan bersihkan tanda petik
+                const kol = baris[i].split(pemisah).map(k => k.replace(/["']/g, '').trim());
+                
+                // Lewati jika nama santri kosong
+                if(!kol[idxNama]) continue;
 
                 const santriBaruRef = doc(collection(db, "santri"));
                 const dataObj = {
                     nama: kol[idxNama],
-                    kelas: kol[idxKelas],
+                    kelas: kol[idxKelas] || '-',
                     kamar: (idxKamar !== -1 && kol[idxKamar]) ? kol[idxKamar] : '-',
                     status: 'aktif'
                 };
@@ -838,6 +844,7 @@ document.getElementById("formImport").addEventListener("submit", async function(
                 count++;
                 totalTersimpan++;
 
+                // Commit setiap 400 dokumen
                 if(count === 400){
                     await batch.commit();
                     batch = writeBatch(db);
@@ -864,7 +871,7 @@ document.getElementById("formImport").addEventListener("submit", async function(
         }
     };
 
-    reader.readAsText(file);
+    reader.readAsText(file, "UTF-8");
 });
 
 // SIMPAN TAMBAH / EDIT MANUAL
