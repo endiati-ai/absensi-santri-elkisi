@@ -191,14 +191,15 @@ body{
 
 .btn-action{
     border:none;
-    padding:6px 10px;
-    border-radius:8px;
+    padding:8px 12px;
+    border-radius:10px;
     font-size:12px;
     cursor:pointer;
     font-weight:bold;
 }
 
 .btn-edit{ background:#dcecff; color:#0056b3; }
+.btn-import{ background:#e5f2ef; color:#075E54; border:1px solid #075E54; }
 .btn-toggle{ background:#ffe1e1; color:#a00000; }
 .btn-toggle.active-status{ background:#dff5e8; color:#0e6231; }
 
@@ -271,6 +272,7 @@ body{
     font-size:13px;
     display:none;
     z-index:200;
+    text-align:center;
 }
 
 /* Modal */
@@ -324,6 +326,15 @@ body{
 .student.inactive{
     opacity:0.6;
     background:#f0f0f0;
+}
+
+.file-info{
+    font-size:12px;
+    color:#68736f;
+    margin-top:8px;
+    background:#f5f7f6;
+    padding:10px;
+    border-radius:10px;
 }
 
 @media(max-width:400px){
@@ -389,9 +400,12 @@ body{
     <!-- HALAMAN KELOLA SANTRI -->
     <div id="pageSantri" style="display:none;">
         <section class="section" style="margin-top:0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                 <div class="section-title" style="margin-bottom:0;">Kelola Santri</div>
-                <button class="btn-action btn-edit" style="padding:10px 14px;" onclick="bukaModalSantri()">+ Tambah</button>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-action btn-import" onclick="bukaModalImport()">📥 Import CSV</button>
+                    <button class="btn-action btn-edit" onclick="bukaModalSantri()">+ Tambah</button>
+                </div>
             </div>
 
             <input class="search" type="text" id="searchManage" placeholder="🔍 Cari nama santri...">
@@ -438,10 +452,33 @@ body{
     </div>
 </div>
 
+<!-- MODAL IMPORT CSV -->
+<div class="modal" id="modalImport">
+    <div class="modal-content">
+        <div class="modal-title">Import Data Santri (CSV)</div>
+        <form id="formImport">
+            <div class="form-group">
+                <label>Pilih File CSV</label>
+                <input type="file" id="fileCsv" accept=".csv" class="input-field" required style="padding:10px;">
+            </div>
+            <div class="file-info">
+                <strong>Format Kolom Header CSV:</strong><br>
+                <code>nama,kelas,kamar</code><br><br>
+                Contoh isi CSV:<br>
+                <em>Ahmad Fauzi,7 Azhari,Kamar 01</em>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-primary btn-cancel" onclick="tutupModalImport()">Batal</button>
+                <button type="submit" class="btn-primary" id="btnProsesImport" style="margin-top:0;">Unggah & Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, doc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB2zc2-YwgauMiWDlJHMpk00nf7qsMJtnY",
@@ -474,7 +511,7 @@ function toast(pesan){
     const element = document.getElementById("toast");
     element.innerText = pesan;
     element.style.display = "block";
-    setTimeout(() => { element.style.display = "none"; }, 2000);
+    setTimeout(() => { element.style.display = "none"; }, 3000);
 }
 
 function tampilError(pesan){
@@ -495,26 +532,24 @@ onAuthStateChanged(auth, async (currentUser) => {
 
 async function mulaiAplikasi(){
     try{
-        await siapkanSantri();
+        await ambilDataSantri();
         siapkanFilterKelas();
         await ambilAbsensi();
-        tampilkanSantri(santri);
+        filterSantri();
         hitungStatistik();
     } catch(error){
         tampilError("Terjadi kesalahan: " + error.message);
     }
 }
 
-async function siapkanSantri(){
+async function ambilDataSantri(){
     const snapshot = await getDocs(collection(db, "santri"));
 
     if(snapshot.empty){
         const contoh = [
             { nama:"Abdullah Hafiz", kelas:"7 Azhari", kamar:"-", status:"aktif" },
             { nama:"Annas Wafie Nashrullah", kelas:"7 Azhari", kamar:"-", status:"aktif" },
-            { nama:"Haritsah Anas", kelas:"7 Azhari", kamar:"-", status:"aktif" },
-            { nama:"Ghazi Agha Attaqi", kelas:"7 Azhari", kamar:"-", status:"aktif" },
-            { nama:"Syafiq Ubaidillah", kelas:"7 Azhari", kamar:"-", status:"aktif" }
+            { nama:"Haritsah Anas", kelas:"7 Azhari", kamar:"-", status:"aktif" }
         ];
 
         for(const data of contoh){
@@ -609,7 +644,6 @@ function tampilkanSantri(data){
     });
 }
 
-// TAMPILKAN DAFTAR KELOLA SANTRI
 function tampilkanKelolaSantri(keyword = ""){
     const list = document.getElementById("studentManageList");
     list.innerHTML = "";
@@ -712,13 +746,12 @@ window.pindahHalaman = function(halaman){
     }
 };
 
-// MODAL SANTRI
+// MODAL MANUAL
 window.bukaModalSantri = function(id = null){
     const modal = document.getElementById("modalSantri");
     const title = document.getElementById("modalTitle");
-    const form = document.getElementById("formSantri");
 
-    form.reset();
+    document.getElementById("formSantri").reset();
     document.getElementById("santriId").value = "";
 
     if(id){
@@ -741,7 +774,99 @@ window.tutupModalSantri = function(){
     document.getElementById("modalSantri").style.display = "none";
 };
 
-// SIMPAN TAMBAH / EDIT SANTRI
+// MODAL IMPORT
+window.bukaModalImport = function(){
+    document.getElementById("formImport").reset();
+    document.getElementById("modalImport").style.display = "flex";
+};
+
+window.tutupModalImport = function(){
+    document.getElementById("modalImport").style.display = "none";
+};
+
+// PROSES IMPORT CSV
+document.getElementById("formImport").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const fileInput = document.getElementById("fileCsv");
+    const file = fileInput.files[0];
+
+    if(!file) return;
+
+    const btn = document.getElementById("btnProsesImport");
+    btn.disabled = true;
+    btn.innerText = "Mengunggah...";
+
+    const reader = new FileReader();
+    reader.onload = async function(evt){
+        try {
+            const teks = evt.target.result;
+            const baris = teks.split(/\r\n|\n/);
+            
+            if(baris.length <= 1){
+                throw new Error("File CSV kosong atau format tidak sesuai.");
+            }
+
+            const header = baris[0].split(',').map(h => h.trim().toLowerCase());
+            const idxNama = header.indexOf('nama');
+            const idxKelas = header.indexOf('kelas');
+            const idxKamar = header.indexOf('kamar');
+
+            if(idxNama === -1 || idxKelas === -1){
+                throw new Error("Header CSV harus memiliki kolom 'nama' dan 'kelas'.");
+            }
+
+            // Menggunakan Firestore Batch Writer (Maksimal 500 per batch)
+            let batch = writeBatch(db);
+            let count = 0;
+            let totalTersimpan = 0;
+
+            for(let i = 1; i < baris.length; i++){
+                const kol = baris[i].split(',').map(k => k.trim());
+                if(kol.length < 2 || !kol[idxNama]) continue;
+
+                const santriBaruRef = doc(collection(db, "santri"));
+                const dataObj = {
+                    nama: kol[idxNama],
+                    kelas: kol[idxKelas],
+                    kamar: idxKamar !== -1 ? (kol[idxKamar] || '-') : '-',
+                    status: 'aktif'
+                };
+
+                batch.set(santriBaruRef, dataObj);
+                count++;
+                totalTersimpan++;
+
+                // Commit setiap 400 dokumen agar aman dari limit Firestore
+                if(count === 400){
+                    await batch.commit();
+                    batch = writeBatch(db);
+                    count = 0;
+                }
+            }
+
+            if(count > 0){
+                await batch.commit();
+            }
+
+            toast(`Berhasil mengimport ${totalTersimpan} santri!`);
+            tutupModalImport();
+            await ambilDataSantri();
+            siapkanFilterKelas();
+            tampilkanKelolaSantri();
+
+        } catch(err){
+            toast("Gagal import: " + err.message);
+            tampilError("Import Error: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Unggah & Simpan";
+        }
+    };
+
+    reader.readAsText(file);
+});
+
+// SIMPAN TAMBAH / EDIT MANUAL
 document.getElementById("formSantri").addEventListener("submit", async function(e){
     e.preventDefault();
     const id = document.getElementById("santriId").value;
@@ -776,7 +901,7 @@ document.getElementById("formSantri").addEventListener("submit", async function(
     }
 });
 
-// TOGGLE STATUS AKTIF / NONAKTIF
+// TOGGLE STATUS
 window.toggleStatusSantri = async function(id){
     const target = santri.find(s => s.id === id);
     if(!target) return;
@@ -787,7 +912,7 @@ window.toggleStatusSantri = async function(id){
         await updateDoc(doc(db, "santri", id), { status: statusBaru });
         target.status = statusBaru;
         
-        toast(`Santri berhasil di-${statusBaru === "aktif" ? "aktifkan" : "nonaktifkan"} ✓`);
+        toast(`Santri di-${statusBaru === "aktif" ? "aktifkan" : "nonaktifkan"} ✓`);
         tampilkanKelolaSantri(document.getElementById("searchManage").value);
         siapkanFilterKelas();
     } catch(err) {
