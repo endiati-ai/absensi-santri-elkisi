@@ -784,7 +784,7 @@ window.tutupModalImport = function(){
     document.getElementById("modalImport").style.display = "none";
 };
 
-// PROSES IMPORT CSV
+// PROSES IMPORT CSV (Mendukung pemisah koma ',' maupun titik koma ';')
 document.getElementById("formImport").addEventListener("submit", async function(e){
     e.preventDefault();
     const fileInput = document.getElementById("fileCsv");
@@ -806,7 +806,10 @@ document.getElementById("formImport").addEventListener("submit", async function(
                 throw new Error("File CSV kosong atau format tidak sesuai.");
             }
 
-            const header = baris[0].split(',').map(h => h.trim().toLowerCase());
+            // Otomatis deteksi apakah pemisah kolom menggunakan ';' atau ','
+            const pemisah = baris[0].includes(';') ? ';' : ',';
+
+            const header = baris[0].split(pemisah).map(h => h.trim().toLowerCase());
             const idxNama = header.indexOf('nama');
             const idxKelas = header.indexOf('kelas');
             const idxKamar = header.indexOf('kamar');
@@ -815,20 +818,19 @@ document.getElementById("formImport").addEventListener("submit", async function(
                 throw new Error("Header CSV harus memiliki kolom 'nama' dan 'kelas'.");
             }
 
-            // Menggunakan Firestore Batch Writer (Maksimal 500 per batch)
             let batch = writeBatch(db);
             let count = 0;
             let totalTersimpan = 0;
 
             for(let i = 1; i < baris.length; i++){
-                const kol = baris[i].split(',').map(k => k.trim());
+                const kol = baris[i].split(pemisah).map(k => k.trim());
                 if(kol.length < 2 || !kol[idxNama]) continue;
 
                 const santriBaruRef = doc(collection(db, "santri"));
                 const dataObj = {
                     nama: kol[idxNama],
                     kelas: kol[idxKelas],
-                    kamar: idxKamar !== -1 ? (kol[idxKamar] || '-') : '-',
+                    kamar: (idxKamar !== -1 && kol[idxKamar]) ? kol[idxKamar] : '-',
                     status: 'aktif'
                 };
 
@@ -836,7 +838,6 @@ document.getElementById("formImport").addEventListener("submit", async function(
                 count++;
                 totalTersimpan++;
 
-                // Commit setiap 400 dokumen agar aman dari limit Firestore
                 if(count === 400){
                     await batch.commit();
                     batch = writeBatch(db);
@@ -848,7 +849,7 @@ document.getElementById("formImport").addEventListener("submit", async function(
                 await batch.commit();
             }
 
-            toast(`Berhasil mengimport ${totalTersimpan} santri!`);
+            toast(`Berhasil mengimport ${totalTersimpan} santri! ✓`);
             tutupModalImport();
             await ambilDataSantri();
             siapkanFilterKelas();
