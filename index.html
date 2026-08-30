@@ -402,7 +402,7 @@ body{
                 <option value="7">Jam 7</option>
                 <option value="8">Jam 8</option>
                 <option value="9">Jam 9</option>
-                <option value="1">Jam subuh </option>
+                <option value="10">Jam subuh </option>
             </select>
 
             <div id="studentList" style="margin-top: 10px;">
@@ -909,10 +909,150 @@ function siapkanHalamanLaporan(){
     selectLaporan.innerHTML = selectFilter.innerHTML;
 }
 
-window.tampilkanHasilLaporan = function(){
+window.tampilkanHasilLaporan = async function(){
     const area = document.getElementById("areaHasilLaporan");
+    const jenis = document.getElementById("jenisLaporanNav").value;
+    const kelasTerpilihLaporan = document.getElementById("kelasLaporanNav").value;
+    const tglTerpilih = document.getElementById("tglLaporanNav").value;
+    const blnTerpilih = document.getElementById("blnLaporanNav").value;
+
     area.innerHTML = `<div class="loading">Memuat rekap data laporan...</div>`;
-    // Pada tahap berikutnya kita isi logika perhitungan tabel rekap di sini
+
+    try {
+        // 1. Filter santri berdasarkan kelas jika dipilih
+        const santriAktif = santri.filter(s => s.status !== "nonaktif");
+        const daftarSantri = kelasTerpilihLaporan 
+            ? santriAktif.filter(s => s.kelas === kelasTerpilihLaporan)
+            : santriAktif;
+
+        if(daftarSantri.length === 0){
+            area.innerHTML = `<div class="loading">Tidak ada data santri untuk kelas ini.</div>`;
+            return;
+        }
+
+        // 2. Ambil data absensi dari Firestore sesuai jenis laporan
+        let snapshot;
+        let dataAbsensi = [];
+
+        if(jenis === "harian"){
+            if(!tglTerpilih){
+                toast("Pilih tanggal terlebih dahulu!");
+                area.innerHTML = "";
+                return;
+            }
+            const q = query(collection(db, "absensi"), where("tanggal", "==", tglTerpilih));
+            snapshot = await getDocs(q);
+        } else if(jenis === "bulanan" || jenis === "mingguan"){
+            const targetBulan = jenis === "bulanan" ? blnTerpilih : tglTerpilih.substring(0, 7);
+            if(!targetBulan){
+                toast("Pilih tanggal/bulan terlebih dahulu!");
+                area.innerHTML = "";
+                return;
+            }
+            const q = query(collection(db, "absensi"));
+            snapshot = await getDocs(q);
+        }
+
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            if(jenis === "harian" && d.tanggal === tglTerpilih){
+                dataAbsensi.push(d);
+            } else if(jenis !== "harian" && d.tanggal && d.tanggal.startsWith(jenis === "bulanan" ? blnTerpilih : tglTerpilih.substring(0, 7))){
+                dataAbsensi.push(d);
+            }
+        });
+
+        // 3. Render Tabel Hasil Rekapan
+        if(jenis === "harian"){
+            // REKAP HARIAN: Menampilkan Per Jam Pelajaran (Subuh / Jam 10 s.d. Jam 9)
+            let html = `
+            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
+                    <thead>
+                        <tr style="background:#075E54; color:white;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                            <th style="padding:4px; border:1px solid #ddd; background:#0e6231;">Subuh</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J1</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J2</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J3</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J4</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J5</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J6</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J7</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J8</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J9</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            daftarSantri.forEach(s => {
+                html += `<tr><td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>`;
+                
+                // Urutan kolom: 10 (Subuh), lalu 1 sampai 9
+                const jamOrder = [10, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                
+                jamOrder.forEach(j => {
+                    const record = dataAbsensi.find(a => a.santriId === s.id && String(a.jam) === String(j));
+                    let st = "-";
+                    let bg = "";
+                    if(record){
+                        if(record.status === "hadir") { st = "H"; bg = "#dff5e8"; }
+                        else if(record.status === "izin") { st = "I"; bg = "#fff2c9"; }
+                        else if(record.status === "sakit") { st = "S"; bg = "#dcecff"; }
+                        else if(record.status === "alpha") { st = "A"; bg = "#ffe1e1"; }
+                    }
+                    html += `<td style="padding:4px; border:1px solid #ddd; background:${bg}; font-weight:bold;">${st}</td>`;
+                });
+                
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>
+            <div style="font-size:11px; color:#68736f; margin-top:8px;">
+                <strong>Keterangan:</strong> H = Hadir, I = Izin, S = Sakit, A = Alpha
+            </div>`;
+            area.innerHTML = html;
+
+        } else {
+            // REKAP MINGGUAN / BULANAN: Akumulasi Total H, I, S, A
+            let html = `
+            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
+                    <thead>
+                        <tr style="background:#075E54; color:white;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Hadir</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#b8860b;">Izin</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0056b3;">Sakit</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#a00000;">Alpha</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            daftarSantri.forEach(s => {
+                const absensix = dataAbsensi.filter(a => a.santriId === s.id);
+                const h = absensix.filter(a => a.status === "hadir").length;
+                const i = absensix.filter(a => a.status === "izin").length;
+                const sk = absensix.filter(a => a.status === "sakit").length;
+                const a = absensix.filter(a => a.status === "alpha").length;
+
+                html += `
+                <tr>
+                    <td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#dff5e8; font-weight:bold;">${h}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#fff2c9; font-weight:bold;">${i}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#dcecff; font-weight:bold;">${sk}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#ffe1e1; font-weight:bold;">${a}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            area.innerHTML = html;
+        }
+
+    } catch(err) {
+        area.innerHTML = `<div class="error">Gagal memuat laporan: ${err.message}</div>`;
+    }
 };
 
 // MODAL MANUAL
