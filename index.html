@@ -409,9 +409,9 @@ body{
         placeholder="🔍  Cari nama santri..."
     >
 
-
-    <div id="studentList">
-
+<select id="filterKelas" class="search" style="margin-top:10px;">
+    <option value="">Semua Kelas</option>
+</select>
         <div class="loading">
             Menghubungkan ke Firebase...
         </div>
@@ -572,7 +572,7 @@ let user = null;
 
 let tanggalHariIni = "";
 
-
+let kelasTerpilih = "";
 
 /* =========================
    TANGGAL
@@ -848,51 +848,71 @@ async function siapkanSantri(){
 
 }
 
+function siapkanFilterKelas(){
 
+    const select =
+        document.getElementById("filterKelas");
+
+    if(!select) return;
+
+    const daftarKelas =
+        [...new Set(
+            santri
+                .map(s => s.kelas)
+                .filter(k => k)
+        )]
+        .sort();
+
+    select.innerHTML =
+        `<option value="">Semua Kelas</option>`;
+
+    daftarKelas.forEach(kelas => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = kelas;
+
+        option.textContent = kelas;
+
+        select.appendChild(option);
+
+    });
+
+}
 
 /* =========================
    AMBIL ABSENSI HARI INI
 ========================= */
 
-async function ambilAbsensi(){
+async function mulaiAplikasi(){
 
-    absensiHariIni = {};
+    try{
 
+        await siapkanSantri();
 
-    const q =
-        query(
+        siapkanFilterKelas();
 
-            collection(
-                db,
-                "absensi"
-            ),
+        await ambilAbsensi();
 
-            where(
-                "tanggal",
-                "==",
-                tanggalHariIni
-            )
-
+        tampilkanSantri(
+            santri
         );
 
+        hitungStatistik();
 
-    const snapshot =
-        await getDocs(q);
+    }
 
+    catch(error){
 
-    snapshot.forEach(
-        item => {
+        console.error(error);
 
-            const data =
-                item.data();
+        tampilError(
+            "Terjadi kesalahan: "
+            + error.message
+        );
 
-            absensiHariIni[
-                data.santriId
-            ] =
-                data.status;
-
-        }
-    );
+    }
 
 }
 
@@ -924,7 +944,37 @@ function tampilkanSantri(data){
 
     }
 
+function filterSantri(){
 
+    const keyword =
+        document.getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const kelas =
+        document.getElementById("filterKelas")
+        .value;
+
+    const hasil =
+        santri.filter(s => {
+
+            const cocokNama =
+                s.nama
+                .toLowerCase()
+                .includes(keyword);
+
+            const cocokKelas =
+                !kelas ||
+                s.kelas === kelas;
+
+            return cocokNama && cocokKelas;
+
+        });
+
+    tampilkanSantri(hasil);
+
+}
     data.forEach(
         (s) => {
 
@@ -1083,9 +1133,7 @@ async function(
             status;
 
 
-        tampilkanSantri(
-            santri
-        );
+        filterSantri();
 
         hitungStatistik();
 
@@ -1124,26 +1172,34 @@ function hitungStatistik(){
     let sakit = 0;
     let alpha = 0;
 
+    const daftar =
+        kelasTerpilih
+        ? santri.filter(
+            s => s.kelas === kelasTerpilih
+        )
+        : santri;
 
-    santri.forEach(
+
+    daftar.forEach(
         s => {
 
             const status =
-                absensiHariIni[
-                    s.id
-                ];
+                absensiHariIni[s.id];
 
 
-            if(status==="hadir")
+            if(status === "hadir")
                 hadir++;
 
-            if(status==="izin")
+
+            if(status === "izin")
                 izin++;
 
-            if(status==="sakit")
+
+            if(status === "sakit")
                 sakit++;
 
-            if(status==="alpha")
+
+            if(status === "alpha")
                 alpha++;
 
         }
@@ -1151,14 +1207,14 @@ function hitungStatistik(){
 
 
     const total =
-        santri.length;
+        daftar.length;
 
 
     const persen =
         total
         ? Math.round(
             (hadir / total) * 100
-          )
+        )
         : 0;
 
 
@@ -1203,25 +1259,22 @@ document.getElementById(
     "search"
 ).addEventListener(
     "input",
+    filterSantri
+);
+
+
+document.getElementById(
+    "filterKelas"
+).addEventListener(
+    "change",
     function(){
 
-        const keyword =
-            this.value
-            .toLowerCase();
+        kelasTerpilih =
+            this.value;
 
+        filterSantri();
 
-        const hasil =
-            santri.filter(
-                s =>
-                    s.nama
-                    .toLowerCase()
-                    .includes(keyword)
-            );
-
-
-        tampilkanSantri(
-            hasil
-        );
+        hitungStatistik();
 
     }
 );
