@@ -449,66 +449,6 @@ body{
                     </select>
                 </div>
 
-   <!-- 4. HALAMAN NILAI -->
-<div id="pageNilai" style="display:none;">
-    <section class="section" style="margin-top:0;">
-        <div class="section-title">📝 Input & Kelola Nilai Santri</div>
-        
-        <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
-            <div class="form-group">
-                <label for="kelasNilaiNav">Pilih Kelas</label>
-                <select id="kelasNilaiNav" class="input-field">
-                    <option value="">-- Pilih Kelas --</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="kategoriNilai">Kategori Nilai</label>
-                <select id="kategoriNilai" class="input-field">
-                    <option value="Tugas/Harian">Tugas / Harian</option>
-                    <option value="Ujian">Ujian (PTS / PAS / Tahriri)</option>
-                    <option value="Hafalan">Hafalan / Setoran</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="mapelNilai">Mata Pelajaran / Kitab</label>
-                <input type="text" id="mapelNilai" class="input-field" placeholder="Contoh: Nahwu, Fiqih, Tajwid...">
-            </div>
-        </div>
-
-        <div id="areaInputNilai">
-            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px; margin-top:10px;">
-                👆 Silakan pilih <strong>Kelas</strong> di atas untuk mulai mengisi nilai.
-            </div>
-        </div>
-    </section>
-</div>
-
-            <div class="form-group">
-                <label>Kategori Nilai</label>
-                <select id="kategoriNilai" class="input-field">
-                    <option value="Tugas/Harian">Tugas / Harian</option>
-                    <option value="Ujian">Ujian (PTS / PAS / Tahriri)</option>
-                    <option value="Hafalan">Hafalan / Setoran</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Mata Pelajaran / Kitab</label>
-                <input type="text" id="mapelNilai" class="input-field" placeholder="Contoh: Nahwu, Fiqih, Tajwid...">
-            </div>
-        </div>
-
-        <!-- Placehoder Area Daftar Santri untuk di-input nilainya -->
-        <div id="areaInputNilai">
-            <div style="text-align:center; color:#68736f; padding:20px;">
-                Silakan pilih kelas terlebih dahulu untuk mulai mengisi nilai.
-            </div>
-        </div>
-    </section>
-</div>
-
                 <!-- Input Tanggal Harian/Mingguan -->
                 <div class="form-group" id="groupTanggalNav">
                     <label>Pilih Tanggal</label>
@@ -546,9 +486,8 @@ body{
     <div class="nav-item active" onclick="pindahHalaman('Beranda')"><span class="nav-icon">🏠</span>Beranda</div>
     <div class="nav-item" onclick="pindahHalaman('Santri')"><span class="nav-icon">👨‍🎓</span>Santri</div>
     <div class="nav-item" onclick="pindahHalaman('Laporan')"><span class="nav-icon">📊</span>Laporan</div>
-    <div class="nav-item" onclick="pindahHalaman('Nilai')"><span class="nav-icon">📝</span>Nilai</div>
 </nav>
-    
+
 <div class="toast" id="toast"></div>
 
 <!-- MODAL TAMBAH / EDIT SANTRI -->
@@ -920,9 +859,7 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-// ==========================================
-// 1. NAVIGASI HALAMAN (Beranda, Santri, Laporan, Nilai)
-// ==========================================
+// NAVIGASI HALAMAN (Beranda, Santri, Laporan)
 window.pindahHalaman = function(halaman){
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
@@ -931,7 +868,6 @@ window.pindahHalaman = function(halaman){
     document.getElementById('pageBeranda').style.display = 'none';
     document.getElementById('pageSantri').style.display = 'none';
     document.getElementById('pageLaporan').style.display = 'none';
-    document.getElementById('pageNilai').style.display = 'none';
 
     if(halaman === 'Beranda'){
         document.getElementById('pageBeranda').style.display = 'block';
@@ -946,163 +882,550 @@ window.pindahHalaman = function(halaman){
         document.getElementById('pageLaporan').style.display = 'block';
         navItems[2].classList.add('active');
         siapkanHalamanLaporan();
-    } else if(halaman === 'Nilai'){
-        document.getElementById('pageNilai').style.display = 'block';
-        navItems[3].classList.add('active');
-        window.siapkanHalamanNilai();
     }
 };
 
-// ==========================================
-// 2. LOGIKA FITUR NILAI SANTRI
-// ==========================================
+// Fungsi penyesuaian bentuk input Laporan
+window.sesuaikanInputLaporanNav = function(){
+    const jenis = document.getElementById("jenisLaporanNav").value;
+    const groupTgl = document.getElementById("groupTanggalNav");
+    const groupBln = document.getElementById("groupBulanNav");
 
-// Menyiapkan dropdown kelas saat menu Nilai dibuka
-window.siapkanHalamanNilai = function(){
-    const selectNilai = document.getElementById("kelasNilaiNav");
+    if(jenis === "bulanan"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "block";
+    } else {
+        groupTgl.style.display = "block";
+        groupBln.style.display = "none";
+    }
+};
+
+// Fungsi menyiapkan isi filter saat menu Laporan dibuka
+function siapkanHalamanLaporan(){
+    document.getElementById("tglLaporanNav").value = tanggalHariIni;
+    const skrg = new Date();
+    const formatBulan = skrg.getFullYear() + "-" + String(skrg.getMonth() + 1).padStart(2, '0');
+    document.getElementById("blnLaporanNav").value = formatBulan;
+
+    const selectLaporan = document.getElementById("kelasLaporanNav");
     const selectFilter = document.getElementById("filterKelas");
-    
-    if(selectNilai && selectFilter){
-        selectNilai.innerHTML = selectFilter.innerHTML;
-        selectNilai.value = ""; 
-        window.muatDaftarSantriNilai();
-    }
-};
+    selectLaporan.innerHTML = selectFilter.innerHTML;
+}
 
-// Menampilkan daftar santri & input angka nilai
-window.muatDaftarSantriNilai = function(){
-    const kelasTerpilih = document.getElementById("kelasNilaiNav").value;
-    const area = document.getElementById("areaInputNilai");
+window.tampilkanHasilLaporan = async function(){
+    const area = document.getElementById("areaHasilLaporan");
+    const jenis = document.getElementById("jenisLaporanNav").value;
+    const kelasTerpilihLaporan = document.getElementById("kelasLaporanNav").value;
+    const tglTerpilih = document.getElementById("tglLaporanNav").value;
+    const blnTerpilih = document.getElementById("blnLaporanNav").value;
 
-    if(!area) return;
-
-    if(!kelasTerpilih){
-        area.innerHTML = `
-            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px; margin-top:10px;">
-                👆 Silakan pilih <strong>Kelas</strong> di atas untuk mulai mengisi nilai.
-            </div>`;
-        return;
-    }
-
-    const santriKelas = santri.filter(s => s.status !== "nonaktif" && s.kelas === kelasTerpilih);
-
-    if(santriKelas.length === 0){
-        area.innerHTML = `
-            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px; margin-top:10px;">
-                Tidak ada data santri aktif untuk kelas <strong>${kelasTerpilih}</strong>.
-            </div>`;
-        return;
-    }
-
-    let html = `
-    <div style="background:white; border-radius:17px; padding:15px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-top:10px;">
-        <div style="font-weight:bold; margin-bottom:10px; color:#075E54;">
-            Daftar Santri Kelas: ${kelasTerpilih} (${santriKelas.length} Santri)
-        </div>
-        
-        <table style="width:100%; border-collapse:collapse; font-size:13px;">
-            <thead>
-                <tr style="background:#e5f2ef; color:#075E54; text-align:left;">
-                    <th style="padding:8px; border-bottom:2px solid #ccc;">Nama Santri</th>
-                    <th style="padding:8px; border-bottom:2px solid #ccc; width:90px; text-align:center;">Nilai (0-100)</th>
-                </tr>
-            </thead>
-            <tbody>`;
-
-    santriKelas.forEach(s => {
-        html += `
-        <tr>
-            <td style="padding:8px; border-bottom:1px solid #eee; font-weight:bold; color:#333;">
-                ${s.nama}
-            </td>
-            <td style="padding:6px; border-bottom:1px solid #eee; text-align:center;">
-                <input type="number" 
-                       id="nilai_${s.id}" 
-                       class="input-field input-nilai-santri" 
-                       data-santri-id="${s.id}"
-                       min="0" 
-                       max="100" 
-                       placeholder="0" 
-                       style="text-align:center; padding:6px; font-size:14px; font-weight:bold; margin:0;">
-            </td>
-        </tr>`;
-    });
-
-    html += `
-            </tbody>
-        </table>
-
-        <button type="button" class="btn-primary" onclick="simpanSemuaNilai()" style="margin-top:15px; background:#075E54;">
-            💾 Simpan Semua Nilai
-        </button>
-    </div>`;
-
-    area.innerHTML = html;
-};
-
-// Menyimpan nilai ke database Firestore
-window.simpanSemuaNilai = async function(){
-    const mapel = document.getElementById("mapelNilai").value.trim();
-    const kategori = document.getElementById("kategoriNilai").value;
-    const kelas = document.getElementById("kelasNilaiNav").value;
-
-    if(!mapel){
-        toast("Isi Mata Pelajaran / Kitab terlebih dahulu!");
-        document.getElementById("mapelNilai").focus();
-        return;
-    }
-
-    const inputElements = document.querySelectorAll(".input-nilai-santri");
-    let countDisimpan = 0;
-
-    toast("Menyimpan nilai...");
+    area.innerHTML = `<div class="loading">Memuat rekap data laporan...</div>`;
 
     try {
-        const promises = Array.from(inputElements).map(async (input) => {
-            const val = input.value;
-            const santriId = input.getAttribute("data-santri-id");
+        // 1. Filter santri berdasarkan kelas jika dipilih
+        const santriAktif = santri.filter(s => s.status !== "nonaktif");
+        const daftarSantri = kelasTerpilihLaporan 
+            ? santriAktif.filter(s => s.kelas === kelasTerpilihLaporan)
+            : santriAktif;
 
-            if(val !== "" && val !== null){
-                const docId = `NILAI_${tanggalHariIni}_${santriId}_${mapel.replace(/\s+/g, '_')}`;
-                const refNilai = doc(db, "nilai", docId);
+        if(daftarSantri.length === 0){
+            area.innerHTML = `<div class="loading">Tidak ada data santri untuk kelas ini.</div>`;
+            return;
+        }
 
-                await setDoc(refNilai, {
-                    santriId: santriId,
-                    kelas: kelas,
-                    mapel: mapel,
-                    kategori: kategori,
-                    nilai: Number(val),
-                    tanggal: tanggalHariIni,
-                    updatedAt: new Date().toISOString()
-                });
+        // 2. Ambil data absensi dari Firestore sesuai jenis laporan
+        let snapshot;
+        let dataAbsensi = [];
 
-                countDisimpan++;
+        if(jenis === "harian"){
+            if(!tglTerpilih){
+                toast("Pilih tanggal terlebih dahulu!");
+                area.innerHTML = "";
+                return;
+            }
+            const q = query(collection(db, "absensi"), where("tanggal", "==", tglTerpilih));
+            snapshot = await getDocs(q);
+        } else if(jenis === "bulanan" || jenis === "mingguan"){
+            const targetBulan = jenis === "bulanan" ? blnTerpilih : tglTerpilih.substring(0, 7);
+            if(!targetBulan){
+                toast("Pilih tanggal/bulan terlebih dahulu!");
+                area.innerHTML = "";
+                return;
+            }
+            const q = query(collection(db, "absensi"));
+            snapshot = await getDocs(q);
+        }
+
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            if(jenis === "harian" && d.tanggal === tglTerpilih){
+                dataAbsensi.push(d);
+            } else if(jenis !== "harian" && d.tanggal && d.tanggal.startsWith(jenis === "bulanan" ? blnTerpilih : tglTerpilih.substring(0, 7))){
+                dataAbsensi.push(d);
             }
         });
 
-        await Promise.all(promises);
+        // 3. Render Tabel Hasil Rekapan
+        if(jenis === "harian"){
+            // REKAP HARIAN: Menampilkan Per Jam Pelajaran (Subuh / Jam 10 s.d. Jam 9)
+            let html = `
+            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
+                    <thead>
+                        <tr style="background:#075E54; color:white;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                            <th style="padding:4px; border:1px solid #ddd; background:#0e6231;">Subuh</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J1</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J2</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J3</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J4</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J5</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J6</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J7</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J8</th>
+                            <th style="padding:4px; border:1px solid #ddd;">J9</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
-        if(countDisimpan > 0){
-            toast(`Berhasil menyimpan nilai untuk ${countDisimpan} santri ✓`);
+            daftarSantri.forEach(s => {
+                html += `<tr><td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>`;
+                
+                // Urutan kolom: 10 (Subuh), lalu 1 sampai 9
+                const jamOrder = [10, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                
+                jamOrder.forEach(j => {
+                    const record = dataAbsensi.find(a => a.santriId === s.id && String(a.jam) === String(j));
+                    let st = "-";
+                    let bg = "";
+                    if(record){
+                        if(record.status === "hadir") { st = "H"; bg = "#dff5e8"; }
+                        else if(record.status === "izin") { st = "I"; bg = "#fff2c9"; }
+                        else if(record.status === "sakit") { st = "S"; bg = "#dcecff"; }
+                        else if(record.status === "alpha") { st = "A"; bg = "#ffe1e1"; }
+                    }
+                    html += `<td style="padding:4px; border:1px solid #ddd; background:${bg}; font-weight:bold;">${st}</td>`;
+                });
+                
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>
+            <div style="font-size:11px; color:#68736f; margin-top:8px;">
+                <strong>Keterangan:</strong> H = Hadir, I = Izin, S = Sakit, A = Alpha
+            </div>`;
+            area.innerHTML = html;
+
         } else {
-            toast("Tidak ada angka nilai yang diisi.");
+            // REKAP MINGGUAN / BULANAN: Akumulasi Total H, I, S, A
+            let html = `
+            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
+                    <thead>
+                        <tr style="background:#075E54; color:white;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Hadir</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#b8860b;">Izin</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0056b3;">Sakit</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#a00000;">Alpha</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            daftarSantri.forEach(s => {
+                const absensix = dataAbsensi.filter(a => a.santriId === s.id);
+                const h = absensix.filter(a => a.status === "hadir").length;
+                const i = absensix.filter(a => a.status === "izin").length;
+                const sk = absensix.filter(a => a.status === "sakit").length;
+                const a = absensix.filter(a => a.status === "alpha").length;
+
+                html += `
+                <tr>
+                    <td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#dff5e8; font-weight:bold;">${h}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#fff2c9; font-weight:bold;">${i}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#dcecff; font-weight:bold;">${sk}</td>
+                    <td style="padding:6px; border:1px solid #ddd; background:#ffe1e1; font-weight:bold;">${a}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            area.innerHTML = html;
         }
 
     } catch(err) {
-        toast("Gagal menyimpan nilai: " + err.message);
+        area.innerHTML = `<div class="error">Gagal memuat laporan: ${err.message}</div>`;
     }
 };
 
-    // Menghubungkan dropdown kelas dengan pemuatan daftar santri secara aman
-document.addEventListener("DOMContentLoaded", () => {
-    const selectKelasNilai = document.getElementById("kelasNilaiNav");
-    if(selectKelasNilai){
-        selectKelasNilai.addEventListener("change", () => {
-            window.muatDaftarSantriNilai();
+// MODAL MANUAL
+window.bukaModalSantri = function(id = null){
+    const modal = document.getElementById("modalSantri");
+    const title = document.getElementById("modalTitle");
+
+    document.getElementById("formSantri").reset();
+    document.getElementById("santriId").value = "";
+
+    if(id){
+        const data = santri.find(s => s.id === id);
+        if(data){
+            title.innerText = "Edit Santri";
+            document.getElementById("santriId").value = data.id;
+            document.getElementById("namaSantri").value = data.nama;
+            document.getElementById("kelasSantri").value = data.kelas;
+            document.getElementById("kamarSantri").value = data.kamar || "-";
+        }
+    } else {
+        title.innerText = "Tambah Santri";
+    }
+
+    modal.style.display = "flex";
+};
+
+window.tutupModalSantri = function(){
+    document.getElementById("modalSantri").style.display = "none";
+};
+
+// MODAL IMPORT
+window.bukaModalImport = function(){
+    document.getElementById("formImport").reset();
+    document.getElementById("modalImport").style.display = "flex";
+};
+
+window.tutupModalImport = function(){
+    document.getElementById("modalImport").style.display = "none";
+};
+
+// MODAL HAPUS KELAS
+window.bukaModalHapusKelas = function(){
+    siapkanFilterKelas();
+    document.getElementById("formHapusKelas").reset();
+    document.getElementById("modalHapusKelas").style.display = "flex";
+};
+
+window.tutupModalHapusKelas = function(){
+    document.getElementById("modalHapusKelas").style.display = "none";
+};
+
+// PROSES HAPUS SANTRI PER KELAS
+document.getElementById("formHapusKelas").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const kelasTarget = document.getElementById("pilihanKelasHapus").value;
+
+    if(!kelasTarget) return;
+
+    if(!confirm(`Apakah Anda yakin ingin menghapus SELURUH santri di kelas '${kelasTarget}'? Data yang dihapus tidak bisa dikembalikan!`)){
+        return;
+    }
+
+    const btn = document.getElementById("btnProsesHapusKelas");
+    btn.disabled = true;
+    btn.innerText = "Menghapus...";
+
+    try {
+        const q = query(collection(db, "santri"), where("kelas", "==", kelasTarget));
+        const snapshot = await getDocs(q);
+
+        if(snapshot.empty){
+            toast("Tidak ada data santri pada kelas ini.");
+            return;
+        }
+
+        let batch = writeBatch(db);
+        let count = 0;
+        let totalDihapus = 0;
+
+        snapshot.forEach((docSnapshot) => {
+            batch.delete(docSnapshot.ref);
+            count++;
+            totalDihapus++;
+
+            if(count === 400){
+                batch.commit();
+                batch = writeBatch(db);
+                count = 0;
+            }
         });
+
+        if(count > 0){
+            await batch.commit();
+        }
+
+        toast(`Berhasil menghapus ${totalDihapus} santri kelas ${kelasTarget}! ✓`);
+        tutupModalHapusKelas();
+        await ambilDataSantri();
+        siapkanFilterKelas();
+        tampilkanKelolaSantri();
+
+    } catch(err){
+        toast("Gagal menghapus: " + err.message);
+        tampilError("Hapus Error: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Hapus Kelas";
     }
 });
+
+// PROSES IMPORT CSV
+document.getElementById("formImport").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const fileInput = document.getElementById("fileCsv");
+    const file = fileInput.files[0];
+
+    if(!file) return;
+
+    const btn = document.getElementById("btnProsesImport");
+    btn.disabled = true;
+    btn.innerText = "Mengunggah...";
+
+    const reader = new FileReader();
+    reader.onload = async function(evt){
+        try {
+            const teks = evt.target.result;
+            const baris = teks.split(/\r\n|\n/).map(b => b.trim()).filter(b => b.length > 0);
+            
+            if(baris.length <= 1){
+                throw new Error("File CSV kosong atau format tidak sesuai.");
+            }
+
+            const pemisah = baris[0].includes(';') ? ';' : ',';
+
+            const header = baris[0].split(pemisah).map(h => h.replace(/["']/g, '').trim().toLowerCase());
+            
+            const idxNama = header.indexOf('nama');
+            const idxKelas = header.indexOf('kelas');
+            const idxKamar = header.indexOf('kamar');
+
+            if(idxNama === -1 || idxKelas === -1){
+                throw new Error("Header CSV tidak ditemukan. Pastikan baris 1 berisi: nama;kelas;kamar");
+            }
+
+            let batch = writeBatch(db);
+            let count = 0;
+            let totalTersimpan = 0;
+
+            for(let i = 1; i < baris.length; i++){
+                const kol = baris[i].split(pemisah).map(k => k.replace(/["']/g, '').trim());
+                
+                if(!kol[idxNama]) continue;
+
+                const santriBaruRef = doc(collection(db, "santri"));
+                const dataObj = {
+                    nama: kol[idxNama],
+                    kelas: kol[idxKelas] || '-',
+                    kamar: (idxKamar !== -1 && kol[idxKamar]) ? kol[idxKamar] : '-',
+                    status: 'aktif'
+                };
+
+                batch.set(santriBaruRef, dataObj);
+                count++;
+                totalTersimpan++;
+
+                if(count === 400){
+                    await batch.commit();
+                    batch = writeBatch(db);
+                    count = 0;
+                }
+            }
+
+            if(count > 0){
+                await batch.commit();
+            }
+
+            toast(`Berhasil mengimport ${totalTersimpan} santri! ✓`);
+            tutupModalImport();
+            await ambilDataSantri();
+            siapkanFilterKelas();
+            tampilkanKelolaSantri();
+
+        } catch(err){
+            toast("Gagal import: " + err.message);
+            tampilError("Import Error: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Unggah & Simpan";
+        }
+    };
+
+    reader.readAsText(file, "UTF-8");
+});
+
+// SIMPAN TAMBAH / EDIT MANUAL
+document.getElementById("formSantri").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const id = document.getElementById("santriId").value;
+    const nama = document.getElementById("namaSantri").value.trim();
+    const kelas = document.getElementById("kelasSantri").value.trim();
+    const kamar = document.getElementById("kamarSantri").value.trim();
+
+    try{
+        if(id){
+            await updateDoc(doc(db, "santri", id), { nama, kelas, kamar });
+            const index = santri.findIndex(s => s.id === id);
+            if(index !== -1){
+                santri[index].nama = nama;
+                santri[index].kelas = kelas;
+                santri[index].kamar = kamar;
+            }
+            toast("Data santri diperbarui ✓");
+        } else {
+            const docRef = await addDoc(collection(db, "santri"), {
+                nama, kelas, kamar, status: "aktif"
+            });
+            santri.push({ id: docRef.id, nama, kelas, kamar, status: "aktif" });
+            toast("Santri berhasil ditambahkan ✓");
+        }
+
+        siapkanFilterKelas();
+        tutupModalSantri();
+        tampilkanKelolaSantri(document.getElementById("searchManage").value);
+    } catch(err){
+        toast("Gagal menyimpan data");
+        tampilError(err.message);
+    }
+});
+
+// TOGGLE STATUS
+window.toggleStatusSantri = async function(id){
+    const target = santri.find(s => s.id === id);
+    if(!target) return;
+
+    const statusBaru = target.status === "nonaktif" ? "aktif" : "nonaktif";
+
+    try {
+        await updateDoc(doc(db, "santri", id), { status: statusBaru });
+        target.status = statusBaru;
+        
+        toast(`Santri di-${statusBaru === "aktif" ? "aktifkan" : "nonaktifkan"} ✓`);
+        tampilkanKelolaSantri(document.getElementById("searchManage").value);
+        siapkanFilterKelas();
+    } catch(err) {
+        toast("Gagal mengubah status");
+        tampilError(err.message);
+    }
+};
+
+// EVENT LISTENERS
+document.getElementById("search").addEventListener("input", filterSantri);
+    // Listener ketika jam pelajaran diubah dari dropdown
+document.getElementById("filterJam").addEventListener("change", async function(){
+    jamPelajaran = this.value;
+    const list = document.getElementById("studentList");
+    list.innerHTML = `<div class="loading">Memuat data Jam ke-${jamPelajaran}...</div>`;
     
+    await ambilAbsensi();
+    filterSantri();
+    hitungStatistik();
+});
+document.getElementById("searchManage").addEventListener("input", function(){
+    tampilkanKelolaSantri(this.value);
+});
+document.getElementById("filterKelas").addEventListener("change", function(){
+    kelasTerpilih = this.value;
+    filterSantri();
+    hitungStatistik();
+});
+   // ==========================================
+// KODE UNTUK MODAL REKAP LAPORAN
+// ==========================================
+
+// 1. Fungsi untuk membuka jendela modal rekap
+window.bukaModalRekap = function(){
+    siapkanFilterKelas();
+    
+    // Set default tanggal hari ini & bulan ini
+    document.getElementById("tglRekap").value = tanggalHariIni;
+    const skrg = new Date();
+    const formatBulan = skrg.getFullYear() + "-" + String(skrg.getMonth() + 1).padStart(2, '0');
+    document.getElementById("blnRekap").value = formatBulan;
+    
+    // Salin daftar kelas ke pilihan di modal rekap
+    const selectRekap = document.getElementById("kelasRekap");
+    const selectFilter = document.getElementById("filterKelas");
+    selectRekap.innerHTML = selectFilter.innerHTML;
+
+    // Tampilkan jendela modal
+    document.getElementById("modalRekap").style.display = "flex";
+};
+
+// 2. Fungsi untuk menutup jendela modal rekap
+window.tutupModalRekap = function(){
+    document.getElementById("modalRekap").style.display = "none";
+};
+
+// 3. Fungsi untuk menyesuaikan pilihan (Harian/Mingguan/Bulanan)
+window.sesuaikanInputRekap = function(){
+    const jenis = document.getElementById("jenisLaporan").value;
+    const groupTgl = document.getElementById("groupTanggal");
+    const groupBln = document.getElementById("groupBulan");
+
+    if(jenis === "bulanan"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "block";
+    } else {
+        groupTgl.style.display = "block";
+        groupBln.style.display = "none";
+    }
+};
+
+    // ... kode-kode JavaScript sebelumnya ...
+
+// FUNGSI HADIRKAN SEMUA SANTRI (SEKALI KLIK DENGAN CEPAT)
+window.hadirkanSemuaSantri = async function(){
+    const jamTerpilih = document.getElementById("filterJam").value;
+    const kelasTerpilih = document.getElementById("filterKelas").value;
+    const kataKunci = document.getElementById("search").value.toLowerCase();
+
+    // 1. Filter santri yang sedang tampil di layar
+    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
+
+    if(kelasTerpilih){
+        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
+    }
+    if(kataKunci){
+        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
+    }
+
+    if(daftarTarget.length === 0){
+        toast("Tidak ada santri yang dapat diproses!");
+        return;
+    }
+
+    try {
+        // Tampilkan indikator loading cepat di tombol
+        toast("Sedang memproses...");
+
+        // 2. Simpan status HADIR untuk setiap santri
+        const janjiSimpan = daftarTarget.map(async (s) => {
+            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
+            const refAbsen = doc(db, "absensi", documentId);
+            
+            await setDoc(refAbsen, {
+                santriId: s.id,
+                tanggal: tanggalHariIni,
+                jam: jamTerpilih,
+                status: "hadir",
+                userId: user.uid,
+                updatedAt: new Date().toISOString()
+            });
+
+            // Update memori lokal
+            absensiHariIni[s.id] = "hadir";
+        });
+
+        await Promise.all(janjiSimpan);
+
+        toast(`Semua santri (${daftarTarget.length}) langsung HADIR ✓`);
+        
+        // Refresh daftar dan statistik
+        filterSantri();
+        hitungStatistik();
+
+    } catch(err) {
+        toast("Gagal memproses: " + err.message);
+    }
+};
+
 </script>
 
 </body>
