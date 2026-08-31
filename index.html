@@ -1092,6 +1092,16 @@ window.simpanSemuaNilai = async function(){
         toast("Gagal menyimpan nilai: " + err.message);
     }
 };
+
+    // Menghubungkan dropdown kelas dengan pemuatan daftar santri secara aman
+document.addEventListener("DOMContentLoaded", () => {
+    const selectKelasNilai = document.getElementById("kelasNilaiNav");
+    if(selectKelasNilai){
+        selectKelasNilai.addEventListener("change", () => {
+            window.muatDaftarSantriNilai();
+        });
+    }
+});
     
 </script>
 
