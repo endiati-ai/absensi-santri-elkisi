@@ -449,6 +449,43 @@ body{
                     </select>
                 </div>
 
+    <!-- 4. HALAMAN NILAI (BARU) -->
+<div id="pageNilai" style="display:none;">
+    <section class="section" style="margin-top:0;">
+        <div class="section-title">📝 Input & Kelola Nilai Santri</div>
+        
+        <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
+            <div class="form-group">
+                <label>Pilih Kelas</label>
+                <select id="kelasNilaiNav" class="input-field" onchange="muatDaftarSantriNilai()">
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Kategori Nilai</label>
+                <select id="kategoriNilai" class="input-field">
+                    <option value="Tugas/Harian">Tugas / Harian</option>
+                    <option value="Ujian">Ujian (PTS / PAS / Tahriri)</option>
+                    <option value="Hafalan">Hafalan / Setoran</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Mata Pelajaran / Kitab</label>
+                <input type="text" id="mapelNilai" class="input-field" placeholder="Contoh: Nahwu, Fiqih, Tajwid...">
+            </div>
+        </div>
+
+        <!-- Placehoder Area Daftar Santri untuk di-input nilainya -->
+        <div id="areaInputNilai">
+            <div style="text-align:center; color:#68736f; padding:20px;">
+                Silakan pilih kelas terlebih dahulu untuk mulai mengisi nilai.
+            </div>
+        </div>
+    </section>
+</div>
+
                 <!-- Input Tanggal Harian/Mingguan -->
                 <div class="form-group" id="groupTanggalNav">
                     <label>Pilih Tanggal</label>
@@ -486,8 +523,9 @@ body{
     <div class="nav-item active" onclick="pindahHalaman('Beranda')"><span class="nav-icon">🏠</span>Beranda</div>
     <div class="nav-item" onclick="pindahHalaman('Santri')"><span class="nav-icon">👨‍🎓</span>Santri</div>
     <div class="nav-item" onclick="pindahHalaman('Laporan')"><span class="nav-icon">📊</span>Laporan</div>
+    <div class="nav-item" onclick="pindahHalaman('Nilai')"><span class="nav-icon">📝</span>Nilai</div>
 </nav>
-
+    
 <div class="toast" id="toast"></div>
 
 <!-- MODAL TAMBAH / EDIT SANTRI -->
@@ -859,7 +897,7 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-// NAVIGASI HALAMAN (Beranda, Santri, Laporan)
+// NAVIGASI HALAMAN (Beranda, Santri, Laporan, Nilai)
 window.pindahHalaman = function(halaman){
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
@@ -868,6 +906,7 @@ window.pindahHalaman = function(halaman){
     document.getElementById('pageBeranda').style.display = 'none';
     document.getElementById('pageSantri').style.display = 'none';
     document.getElementById('pageLaporan').style.display = 'none';
+    document.getElementById('pageNilai').style.display = 'none';
 
     if(halaman === 'Beranda'){
         document.getElementById('pageBeranda').style.display = 'block';
@@ -882,8 +921,19 @@ window.pindahHalaman = function(halaman){
         document.getElementById('pageLaporan').style.display = 'block';
         navItems[2].classList.add('active');
         siapkanHalamanLaporan();
+    } else if(halaman === 'Nilai'){
+        document.getElementById('pageNilai').style.display = 'block';
+        navItems[3].classList.add('active');
+        siapkanHalamanNilai();
     }
 };
+
+// Fungsi menyiapkan pilihan kelas di Halaman Nilai
+function siapkanHalamanNilai(){
+    const selectNilai = document.getElementById("kelasNilaiNav");
+    const selectFilter = document.getElementById("filterKelas");
+    selectNilai.innerHTML = selectFilter.innerHTML;
+}
 
 // Fungsi penyesuaian bentuk input Laporan
 window.sesuaikanInputLaporanNav = function(){
