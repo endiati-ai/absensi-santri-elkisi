@@ -1476,6 +1476,133 @@ window.hadirkanSemuaSantri = async function(){
     }
 };
 
+    // ==========================================
+// LOGIKA INPUT & SIMPAN NILAI SANTRI
+// ==========================================
+
+// 1. Menampilkan daftar santri sesuai kelas yang dipilih di Halaman Nilai
+window.muatDaftarSantriNilai = function(){
+    const kelasTerpilih = document.getElementById("kelasNilaiNav").value;
+    const area = document.getElementById("areaInputNilai");
+
+    if(!kelasTerpilih){
+        area.innerHTML = `
+            <div style="text-align:center; color:#68736f; padding:20px;">
+                Silakan pilih kelas terlebih dahulu untuk mulai mengisi nilai.
+            </div>`;
+        return;
+    }
+
+    const santriKelas = santri.filter(s => s.status !== "nonaktif" && s.kelas === kelasTerpilih);
+
+    if(santriKelas.length === 0){
+        area.innerHTML = `
+            <div style="text-align:center; color:#68736f; padding:20px;">
+                Tidak ada santri aktif di kelas ${kelasTerpilih}.
+            </div>`;
+        return;
+    }
+
+    let html = `
+    <div style="background:white; border-radius:17px; padding:15px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+        <div style="font-weight:bold; margin-bottom:10px; color:#075E54;">
+            Daftar Santri Kelas: ${kelasTerpilih} (${santriKelas.length} Santri)
+        </div>
+        
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#e5f2ef; color:#075E54; text-align:left;">
+                    <th style="padding:8px; border-bottom:2px solid #ccc;">Nama Santri</th>
+                    <th style="padding:8px; border-bottom:2px solid #ccc; width:90px; text-align:center;">Nilai (0-100)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    santriKelas.forEach(s => {
+        html += `
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee; font-weight:bold; color:#333;">
+                ${s.nama}
+            </td>
+            <td style="padding:6px; border-bottom:1px solid #eee; text-align:center;">
+                <input type="number" 
+                       id="nilai_${s.id}" 
+                       class="input-field input-nilai-santri" 
+                       data-santri-id="${s.id}"
+                       min="0" 
+                       max="100" 
+                       placeholder="0" 
+                       style="text-align:center; padding:6px; font-size:14px; font-weight:bold; margin:0;">
+            </td>
+        </tr>`;
+    });
+
+    html += `
+            </tbody>
+        </table>
+
+        <button type="button" class="btn-primary" onclick="simpanSemuaNilai()" style="margin-top:15px; background:#075E54;">
+            💾 Simpan Semua Nilai
+        </button>
+    </div>`;
+
+    area.innerHTML = html;
+};
+
+// 2. Menyimpan Nilai Massal ke Firebase
+window.simpanSemuaNilai = async function(){
+    const mapel = document.getElementById("mapelNilai").value.trim();
+    const kategori = document.getElementById("kategoriNilai").value;
+    const kelas = document.getElementById("kelasNilaiNav").value;
+
+    if(!mapel){
+        toast("Isi Mata Pelajaran / Kitab terlebih dahulu!");
+        document.getElementById("mapelNilai").focus();
+        return;
+    }
+
+    const inputElements = document.querySelectorAll(".input-nilai-santri");
+    let countDisimpan = 0;
+
+    toast("Menyimpan nilai...");
+
+    try {
+        const promises = Array.from(inputElements).map(async (input) => {
+            const val = input.value;
+            const santriId = input.getAttribute("data-santri-id");
+
+            // Hanya simpan jika kolom nilai diisi angka
+            if(val !== "" && val !== null){
+                const docId = `NILAI_${tanggalHariIni}_${santriId}_${mapel.replace(/\s+/g, '_')}`;
+                const refNilai = doc(db, "nilai", docId);
+
+                await setDoc(refNilai, {
+                    santriId: santriId,
+                    kelas: kelas,
+                    mapel: mapel,
+                    kategori: kategori,
+                    nilai: Number(val),
+                    tanggal: tanggalHariIni,
+                    updatedAt: new Date().toISOString()
+                });
+
+                countDisimpan++;
+            }
+        });
+
+        await Promise.all(promises);
+
+        if(countDisimpan > 0){
+            toast(`Berhasil menyimpan nilai untuk ${countDisimpan} santri ✓`);
+        } else {
+            toast("Tidak ada nilai yang diisi.");
+        }
+
+    } catch(err) {
+        toast("Gagal menyimpan nilai: " + err.message);
+    }
+};
+    
 </script>
 
 </body>
