@@ -449,6 +449,56 @@ body{
                     </select>
                 </div>
 
+                <!-- 4. HALAMAN NILAI -->
+<div id="pageNilai" style="display:none;">
+    <section class="section" style="margin-top:0;">
+        <div class="section-title">📝 Input & Kelola Nilai Santri</div>
+        
+        <!-- FORM FILTER PENILAIAN -->
+        <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
+            
+            <!-- 1. Pilih Kelas -->
+            <div class="form-group">
+                <label for="kelasNilaiNav">1. Pilih Kelas</label>
+                <select id="kelasNilaiNav" class="input-field" onchange="muatDaftarSantriNilai()">
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+
+            <!-- 2. Nama Mata Pelajaran -->
+            <div class="form-group">
+                <label for="mapelNilai">2. Mata Pelajaran / Kitab</label>
+                <input type="text" id="mapelNilai" class="input-field" placeholder="Contoh: Nahwu, Fiqih, Tajwid...">
+            </div>
+
+            <!-- 3. Kategori Penilaian -->
+            <div class="form-group">
+                <label for="kategoriNilai">3. Kategori Penilaian</label>
+                <select id="kategoriNilai" class="input-field" onchange="cekKategoriNilai()">
+                    <option value="Tugas/Harian">Tugas / Harian (Bisa Berkali-kali)</option>
+                    <option value="PTS">PTS (Tengah Semester)</option>
+                    <option value="PAS">PAS (Akhir Semester)</option>
+                </select>
+            </div>
+
+            <!-- 4. Judul/Nama Spesifik Penilaian -->
+            <div class="form-group" id="boxJudulPenilaian">
+                <label for="judulPenilaian">4. Nama / Judul Penilaian</label>
+                <input type="text" id="judulPenilaian" class="input-field" placeholder="Contoh: Tugas 1, Setoran Bab 1, Quiz 2...">
+            </div>
+
+        </div>
+
+        <!-- AREA DAFTAR SANTRI (Diisi secara otomatis oleh JavaScript) -->
+        <div id="areaInputNilai">
+            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px;">
+                👆 Silakan pilih <strong>Kelas</strong> di atas untuk mulai mengisi nilai.
+            </div>
+        </div>
+
+    </section>
+</div>
+
                 <!-- Input Tanggal Harian/Mingguan -->
                 <div class="form-group" id="groupTanggalNav">
                     <label>Pilih Tanggal</label>
@@ -482,10 +532,10 @@ body{
 </main>
 
 <nav class="bottom-nav">
-    <nav class="bottom-nav">
     <div class="nav-item active" onclick="pindahHalaman('Beranda')"><span class="nav-icon">🏠</span>Beranda</div>
     <div class="nav-item" onclick="pindahHalaman('Santri')"><span class="nav-icon">👨‍🎓</span>Santri</div>
     <div class="nav-item" onclick="pindahHalaman('Laporan')"><span class="nav-icon">📊</span>Laporan</div>
+    <div class="nav-item" onclick="pindahHalaman('Nilai')"><span class="nav-icon">📝</span>Nilai</div>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -859,15 +909,15 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-// NAVIGASI HALAMAN (Beranda, Santri, Laporan)
+// NAVIGASI HALAMAN (Beranda, Santri, Laporan, Nilai)
 window.pindahHalaman = function(halaman){
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
 
-    // Sembunyikan semua halaman
     document.getElementById('pageBeranda').style.display = 'none';
     document.getElementById('pageSantri').style.display = 'none';
     document.getElementById('pageLaporan').style.display = 'none';
+    if(document.getElementById('pageNilai')) document.getElementById('pageNilai').style.display = 'none';
 
     if(halaman === 'Beranda'){
         document.getElementById('pageBeranda').style.display = 'block';
@@ -882,6 +932,10 @@ window.pindahHalaman = function(halaman){
         document.getElementById('pageLaporan').style.display = 'block';
         navItems[2].classList.add('active');
         siapkanHalamanLaporan();
+    } else if(halaman === 'Nilai'){
+        document.getElementById('pageNilai').style.display = 'block';
+        navItems[3].classList.add('active');
+        siapkanHalamanNilai();
     }
 };
 
@@ -1428,5 +1482,168 @@ window.hadirkanSemuaSantri = async function(){
 
 </script>
 
+    // ==========================================
+// LOGIKA FITUR INPUT NILAI SANTRI
+// ==========================================
+
+// 1. Menyiapkan Pilihan Kelas di Halaman Nilai
+window.siapkanHalamanNilai = function(){
+    const selectNilai = document.getElementById("kelasNilaiNav");
+    const selectFilter = document.getElementById("filterKelas");
+    if(selectNilai && selectFilter){
+        selectNilai.innerHTML = selectFilter.innerHTML;
+        selectNilai.value = ""; 
+        window.muatDaftarSantriNilai();
+    }
+};
+
+// 2. Mengatur Form Judul Penilaian Sesuai Kategori
+window.cekKategoriNilai = function(){
+    const kategori = document.getElementById("kategoriNilai").value;
+    const boxJudul = document.getElementById("boxJudulPenilaian");
+    const inputJudul = document.getElementById("judulPenilaian");
+
+    if(kategori === "PTS"){
+        inputJudul.value = "Penilaian Tengah Semester (PTS)";
+        boxJudul.style.display = "block";
+    } else if(kategori === "PAS"){
+        inputJudul.value = "Penilaian Akhir Semester (PAS)";
+        boxJudul.style.display = "block";
+    } else {
+        inputJudul.value = "";
+        inputJudul.placeholder = "Contoh: Tugas 1, Tugas 2, Setoran Bab 1...";
+        boxJudul.style.display = "block";
+    }
+};
+
+// 3. Menampilkan Daftar Santri & Kolom Input Nilai
+window.muatDaftarSantriNilai = function(){
+    const kelasTerpilih = document.getElementById("kelasNilaiNav").value;
+    const area = document.getElementById("areaInputNilai");
+    if(!area) return;
+
+    if(!kelasTerpilih){
+        area.innerHTML = `
+            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px;">
+                👆 Silakan pilih <strong>Kelas</strong> di atas untuk mulai mengisi nilai.
+            </div>`;
+        return;
+    }
+
+    const santriKelas = santri.filter(s => s.status !== "nonaktif" && s.kelas === kelasTerpilih);
+
+    if(santriKelas.length === 0){
+        area.innerHTML = `
+            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px;">
+                Tidak ada data santri aktif untuk kelas <strong>${kelasTerpilih}</strong>.
+            </div>`;
+        return;
+    }
+
+    let html = `
+    <div style="background:white; border-radius:17px; padding:15px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+        <div style="font-weight:bold; margin-bottom:12px; color:#075E54; display:flex; justify-content:space-between; align-items:center;">
+            <span>Daftar Santri (${santriKelas.length})</span>
+            <span style="font-size:11px; background:#e5f2ef; padding:4px 8px; border-radius:8px;">Kelas: ${kelasTerpilih}</span>
+        </div>
+        
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#075E54; color:white; text-align:left;">
+                    <th style="padding:8px; border-radius:6px 0 0 6px;">Nama Santri</th>
+                    <th style="padding:8px; width:90px; text-align:center; border-radius:0 6px 6px 0;">Nilai (0-100)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    santriKelas.forEach(s => {
+        html += `
+        <tr>
+            <td style="padding:10px 6px; border-bottom:1px solid #eee; font-weight:bold; color:#333;">
+                ${s.nama}
+            </td>
+            <td style="padding:6px; border-bottom:1px solid #eee; text-align:center;">
+                <input type="number" 
+                       id="nilai_${s.id}" 
+                       class="input-field input-nilai-santri" 
+                       data-santri-id="${s.id}"
+                       min="0" 
+                       max="100" 
+                       placeholder="0" 
+                       style="text-align:center; padding:6px; font-size:14px; font-weight:bold; margin:0; border:1px solid #ccc; border-radius:8px;">
+            </td>
+        </tr>`;
+    });
+
+    html += `
+            </tbody>
+        </table>
+
+        <button type="button" class="btn-primary" onclick="simpanSemuaNilai()" style="margin-top:15px; background:#075E54; width:100%;">
+            💾 Simpan Semua Nilai
+        </button>
+    </div>`;
+
+    area.innerHTML = html;
+};
+
+// 4. Menyimpan Nilai ke Firebase Firestore
+window.simpanSemuaNilai = async function(){
+    const mapel = document.getElementById("mapelNilai").value.trim();
+    const kategori = document.getElementById("kategoriNilai").value;
+    const judul = document.getElementById("judulPenilaian").value.trim();
+    const kelas = document.getElementById("kelasNilaiNav").value;
+
+    if(!mapel){
+        toast("Isi Mata Pelajaran / Kitab terlebih dahulu!");
+        document.getElementById("mapelNilai").focus();
+        return;
+    }
+
+    const namaPenilaian = judul || kategori;
+    const inputElements = document.querySelectorAll(".input-nilai-santri");
+    let countDisimpan = 0;
+
+    toast("Menyimpan nilai...");
+
+    try {
+        const promises = Array.from(inputElements).map(async (input) => {
+            const val = input.value;
+            const santriId = input.getAttribute("data-santri-id");
+
+            if(val !== "" && val !== null){
+                // ID unik gabungan tanggal, santri, mapel, dan nama penilaian
+                const idClean = `${santriId}_${mapel}_${namaPenilaian}_${tanggalHariIni}`.replace(/[^a-zA-Z0-9]/g, '_');
+                const docId = `NILAI_${idClean}`;
+                const refNilai = doc(db, "nilai", docId);
+
+                await setDoc(refNilai, {
+                    santriId: santriId,
+                    kelas: kelas,
+                    mapel: mapel,
+                    kategori: kategori,
+                    judulPenilaian: namaPenilaian,
+                    nilai: Number(val),
+                    tanggal: tanggalHariIni,
+                    updatedAt: new Date().toISOString()
+                });
+
+                countDisimpan++;
+            }
+        });
+
+        await Promise.all(promises);
+
+        if(countDisimpan > 0){
+            toast(`Berhasil menyimpan ${namaPenilaian} (${mapel}) untuk ${countDisimpan} santri ✓`);
+        } else {
+            toast("Tidak ada nilai angka yang diisi.");
+        }
+
+    } catch(err) {
+        toast("Gagal menyimpan nilai: " + err.message);
+    }
+};
+    
 </body>
 </html>
