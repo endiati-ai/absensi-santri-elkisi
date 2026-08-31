@@ -932,7 +932,11 @@ window.pindahHalaman = function(halaman){
 function siapkanHalamanNilai(){
     const selectNilai = document.getElementById("kelasNilaiNav");
     const selectFilter = document.getElementById("filterKelas");
-    selectNilai.innerHTML = selectFilter.innerHTML;
+    if(selectNilai && selectFilter){
+        selectNilai.innerHTML = selectFilter.innerHTML;
+        selectNilai.value = ""; 
+        muatDaftarSantriNilai(); // 👈 Menampilkan teks petunjuk pilih kelas
+    }
 }
 
 // Fungsi penyesuaian bentuk input Laporan
