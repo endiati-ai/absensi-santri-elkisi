@@ -449,18 +449,41 @@ body{
                     </select>
                 </div>
 
-    <!-- 4. HALAMAN NILAI (BARU) -->
+   <!-- 4. HALAMAN NILAI -->
 <div id="pageNilai" style="display:none;">
     <section class="section" style="margin-top:0;">
         <div class="section-title">📝 Input & Kelola Nilai Santri</div>
         
         <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
             <div class="form-group">
-                <label>Pilih Kelas</label>
-                <select id="kelasNilaiNav" class="input-field" onchange="muatDaftarSantriNilai()">
+                <label for="kelasNilaiNav">Pilih Kelas</label>
+                <select id="kelasNilaiNav" class="input-field">
                     <option value="">-- Pilih Kelas --</option>
                 </select>
             </div>
+
+            <div class="form-group">
+                <label for="kategoriNilai">Kategori Nilai</label>
+                <select id="kategoriNilai" class="input-field">
+                    <option value="Tugas/Harian">Tugas / Harian</option>
+                    <option value="Ujian">Ujian (PTS / PAS / Tahriri)</option>
+                    <option value="Hafalan">Hafalan / Setoran</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mapelNilai">Mata Pelajaran / Kitab</label>
+                <input type="text" id="mapelNilai" class="input-field" placeholder="Contoh: Nahwu, Fiqih, Tajwid...">
+            </div>
+        </div>
+
+        <div id="areaInputNilai">
+            <div style="text-align:center; color:#68736f; padding:20px; background:white; border-radius:14px; margin-top:10px;">
+                👆 Silakan pilih <strong>Kelas</strong> di atas untuk mulai mengisi nilai.
+            </div>
+        </div>
+    </section>
+</div>
 
             <div class="form-group">
                 <label>Kategori Nilai</label>
