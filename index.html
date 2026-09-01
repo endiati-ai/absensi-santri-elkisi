@@ -1090,25 +1090,26 @@ window.simpanSemuaNilai = async function(){
     }
 };
 
-// NAVIGASI KONTROL INPUT LAPORAN
-window.sesuaikanInputLaporanNav = function(){
+window.sesuaikanInputLaporanNav = function() {
     const jenis = document.getElementById("jenisLaporanNav").value;
-    const groupTgl = document.getElementById("groupTanggalNav");
-    const groupBln = document.getElementById("groupBulanNav");
+    
+    // Elemen Input Form
+    const groupTanggal = document.getElementById("groupTanggalNav");
+    const groupBulan = document.getElementById("groupBulanNav");
     const groupMapel = document.getElementById("groupMapelNav");
 
-    if(jenis === "bulanan"){
-        groupTgl.style.display = "none";
-        groupBln.style.display = "block";
+    if (jenis === "harian" || jenis === "mingguan") {
+        groupTanggal.style.display = "block";
+        groupBulan.style.display = "none";
         groupMapel.style.display = "none";
-    } else if(jenis === "nilai"){
-        groupTgl.style.display = "none";
-        groupBln.style.display = "none";
-        groupMapel.style.display = "block";
-    } else {
-        groupTgl.style.display = "block";
-        groupBln.style.display = "none";
+    } else if (jenis === "bulanan") {
+        groupTanggal.style.display = "none";
+        groupBulan.style.display = "block";
         groupMapel.style.display = "none";
+    } else if (jenis === "nilai") {
+        groupTanggal.style.display = "none";
+        groupBulan.style.display = "none";
+        groupMapel.style.display = "block"; // Tampilkan input Mata Pelajaran
     }
 };
 
@@ -1123,97 +1124,161 @@ function siapkanHalamanLaporan(){
     selectLaporan.innerHTML = selectFilter.innerHTML;
 }
 
-window.tampilkanHasilLaporan = async function(){
-    const area = document.getElementById("areaHasilLaporan");
+// ==========================================
+// FUNGSI MENAMPILKAN REKAP LAPORAN
+// ==========================================
+window.tampilkanHasilLaporan = async function() {
     const jenis = document.getElementById("jenisLaporanNav").value;
-    const kelasTerpilihLaporan = document.getElementById("kelasLaporanNav").value;
-    const tglTerpilih = document.getElementById("tglLaporanNav").value;
-    const blnTerpilih = document.getElementById("blnLaporanNav").value;
+    const areaHasil = document.getElementById("areaHasilLaporan");
 
-    area.innerHTML = `<div class="loading">Memuat rekap data laporan...</div>`;
+    // PROSES KHUSUS UNTUK REKAP NILAI
+    if (jenis === "nilai") {
+        const mapel = document.getElementById("mapelLaporanNav").value.trim();
+        const kelas = document.getElementById("kelasLaporanNav").value;
 
-    try {
-        const santriAktif = santri.filter(s => s.status !== "nonaktif");
-        let daftarSantri = kelasTerpilihLaporan 
-            ? santriAktif.filter(s => s.kelas === kelasTerpilihLaporan)
-            : santriAktif;
-
-        if(daftarSantri.length === 0){
-            area.innerHTML = `<div class="loading">Tidak ada data santri untuk kelas ini.</div>`;
+        // Validasi: Mata Pelajaran harus diisi
+        if (!mapel) {
+            toast("Harap isi Mata Pelajaran!");
             return;
         }
 
-        // Pengurutan daftar santri secara Alfabetis A-Z untuk laporan
-        daftarSantri.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
+        areaHasil.innerHTML = `<div class="loading">Memuat data rekap nilai ${mapel}...</div>`;
 
-        if(jenis === "nilai"){
-            const mapelTerpilih = document.getElementById("mapelLaporanNav").value.trim().toLowerCase();
+        try {
+            // 1. Ambil data nilai dari koleksi Firestore berdasarkan Mata Pelajaran
+            const q = query(collection(db, "nilai"), where("mapel", "==", mapel));
+            const querySnapshot = await getDocs(q);
 
-            if(!mapelTerpilih){
-                toast("Isi Mata Pelajaran terlebih dahulu!");
-                area.innerHTML = `<div class="loading">Ketik nama mata pelajaran untuk melihat rekap nilai.</div>`;
+            let rekapData = {};
+            let maxTugas = 0;
+            let maxUlangan = 0;
+
+            // 2. KELOMPOKKAN DATA NILAI PER SANTRI (MENGGUNAKAN ARRAY PUSH)
+            querySnapshot.forEach((docSnap) => {
+                const d = docSnap.data();
+
+                // Saring berdasarkan kelas jika kelas dipilih pada filter
+                if (kelas && d.kelas !== kelas) return;
+
+                // Inisialisasi struktur data santri jika belum terdaftar di rekapData
+                if (!rekapData[d.santriId]) {
+                    rekapData[d.santriId] = {
+                        nama: d.namaSantri || "Tanpa Nama",
+                        kelas: d.kelas || "-",
+                        tugas: [],   // Array untuk menyimpan SEMUA tugas (T1, T2, dst)
+                        ulangan: []  // Array untuk menyimpan SEMUA ulangan (UH1, UH2, dst)
+                    };
+                }
+
+                // Masukkan nilai ke Array (PUSH) agar nilai lama TIDAK tertimpa
+                if (d.jenis === "tugas") {
+                    rekapData[d.santriId].tugas.push(Number(d.nilai));
+                    // Hitung jumlah Tugas terbanyak untuk menentukan jumlah kolom tabel
+                    if (rekapData[d.santriId].tugas.length > maxTugas) {
+                        maxTugas = rekapData[d.santriId].tugas.length;
+                    }
+                } else if (d.jenis === "ulangan") {
+                    rekapData[d.santriId].ulangan.push(Number(d.nilai));
+                    // Hitung jumlah Ulangan terbanyak untuk menentukan jumlah kolom tabel
+                    if (rekapData[d.santriId].ulangan.length > maxUlangan) {
+                        maxUlangan = rekapData[d.santriId].ulangan.length;
+                    }
+                }
+            });
+
+            // Set minimal 1 kolom jika belum ada tugas/ulangan sama sekali
+            if (maxTugas === 0) maxTugas = 1;
+            if (maxUlangan === 0) maxUlangan = 1;
+
+            const santriKeys = Object.keys(rekapData);
+
+            // Jika tidak ada data yang ditemukan
+            if (santriKeys.length === 0) {
+                areaHasil.innerHTML = `
+                    <div style="text-align:center; padding:20px; color:#666; background:white; border-radius:12px; margin-top:15px;">
+                        Data nilai untuk Mata Pelajaran <b>"${mapel}"</b> tidak ditemukan.
+                    </div>`;
                 return;
             }
 
-            const q = query(collection(db, "nilai"));
-            const snapshot = await getDocs(q);
-            let dataNilai = [];
-            snapshot.forEach(doc => dataNilai.push(doc.data()));
-
-            let html = `
-            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
-                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
+            // 3. BUAT HEADER TABEL SECARA DINAMIS
+            let htmlTabel = `
+            <div style="overflow-x:auto; margin-top:15px; background:white; padding:12px; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.05);">
+                <table border="1" style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-color:#ddd;">
                     <thead>
                         <tr style="background:#075E54; color:white;">
-                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
-                            <th style="padding:6px; border:1px solid #ddd;">Rata Tugas</th>
-                            <th style="padding:6px; border:1px solid #ddd;">Rata UH</th>
-                            <th style="padding:6px; border:1px solid #ddd;">UTS</th>
-                            <th style="padding:6px; border:1px solid #ddd;">UAS</th>
-                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Nilai Akhir</th>
+                            <th rowspan="2" style="padding:8px;">No</th>
+                            <th rowspan="2" style="padding:8px;">Nama Santri</th>
+                            <th colspan="${maxTugas}" style="padding:6px;">Nilai Tugas</th>
+                            <th colspan="${maxUlangan}" style="padding:6px;">Nilai Ulangan</th>
+                            <th rowspan="2" style="padding:8px;">Rata-Rata</th>
                         </tr>
-                    </thead>
-                    <tbody>`;
+                        <tr style="background:#128C7E; color:white;">`;
 
-            daftarSantri.forEach(s => {
-                const rec = dataNilai.find(n => n.santriId === s.id && n.mapel === mapelTerpilih);
-                
-                let avgTugas = "-", avgUH = "-", uts = "-", uas = "-";
+            // Buat Sub-Header Kolom Tugas (T1, T2, T3...)
+            for (let i = 1; i <= maxTugas; i++) {
+                htmlTabel += `<th style="padding:5px; min-width:35px;">T${i}</th>`;
+            }
 
-                if(rec){
-                    const listTugas = Object.keys(rec)
-                        .filter(k => k.startsWith("tugas_") && typeof rec[k] === "number")
-                        .map(k => rec[k]);
-                    if(listTugas.length > 0){
-                        avgTugas = Math.round(listTugas.reduce((a,b)=>a+b, 0) / listTugas.length);
+            // Buat Sub-Header Kolom Ulangan (UH1, UH2...)
+            for (let i = 1; i <= maxUlangan; i++) {
+                htmlTabel += `<th style="padding:5px; min-width:40px;">UH${i}</th>`;
+            }
+
+            htmlTabel += `</tr></thead><tbody>`;
+
+            // 4. BUAT BARIS DATA UNTUK SETIAP SANTRI
+            let no = 1;
+
+            santriKeys.forEach((id) => {
+                const s = rekapData[id];
+                let totalNilai = 0;
+                let countNilai = 0;
+
+                htmlTabel += `<tr>
+                    <td style="padding:6px;">${no++}</td>
+                    <td style="padding:6px; text-align:left; font-weight:bold;">${s.nama}</td>`;
+
+                // Render Nilai Tugas per Santri
+                for (let i = 0; i < maxTugas; i++) {
+                    const val = s.tugas[i] !== undefined ? s.tugas[i] : "-";
+                    htmlTabel += `<td style="padding:6px;">${val}</td>`;
+                    if (typeof val === 'number') { 
+                        totalNilai += val; 
+                        countNilai++; 
                     }
-
-                    const listUH = Object.keys(rec)
-                        .filter(k => k.startsWith("uh_") && typeof rec[k] === "number")
-                        .map(k => rec[k]);
-                    if(listUH.length > 0){
-                        avgUH = Math.round(listUH.reduce((a,b)=>a+b, 0) / listUH.length);
-                    }
-
-                    uts = typeof rec.uts === "number" ? rec.uts : "-";
-                    uas = typeof rec.uas === "number" ? rec.uas : "-";
                 }
 
-                const komponenAkhir = [avgTugas, avgUH, uts, uas].filter(v => typeof v === "number");
-                const nilaiAkhir = komponenAkhir.length > 0 
-                    ? Math.round(komponenAkhir.reduce((a, b) => a + b, 0) / komponenAkhir.length) 
-                    : "-";
+                // Render Nilai Ulangan per Santri
+                for (let i = 0; i < maxUlangan; i++) {
+                    const val = s.ulangan[i] !== undefined ? s.ulangan[i] : "-";
+                    htmlTabel += `<td style="padding:6px;">${val}</td>`;
+                    if (typeof val === 'number') { 
+                        totalNilai += val; 
+                        countNilai++; 
+                    }
+                }
 
-                html += `
-                <tr>
-                    <td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>
-                    <td style="padding:6px; border:1px solid #ddd;">${avgTugas}</td>
-                    <td style="padding:6px; border:1px solid #ddd;">${avgUH}</td>
-                    <td style="padding:6px; border:1px solid #ddd;">${uts}</td>
-                    <td style="padding:6px; border:1px solid #ddd;">${uas}</td>
-                    <td style="padding:6px; border:1px solid #ddd; font-weight:bold; background:#e5f2ef;">${nilaiAkhir}</td>
-                </tr>`;
+                // Hitung Rata-Rata Keseluruhan Nilai Santri
+                const avg = countNilai > 0 ? (totalNilai / countNilai).toFixed(1) : "-";
+                htmlTabel += `<td style="padding:6px; background:#e5f2ef; font-weight:bold;">${avg}</td></tr>`;
             });
+
+            htmlTabel += `</tbody></table></div>`;
+
+            // Masukkan tabel yang dibuat ke area tampilan
+            areaHasil.innerHTML = htmlTabel;
+
+        } catch (err) {
+            toast("Gagal memuat rekap nilai: " + err.message);
+            areaHasil.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+        }
+    } 
+    // Jika laporan selain nilai (Harian, Mingguan, Bulanan)
+    else {
+        // ... (Biarkan fungsi laporan absensi Anda yang lama di bagian ini)
+    }
+};
 
             html += `</tbody></table></div>`;
             area.innerHTML = html;
