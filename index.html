@@ -343,6 +343,39 @@ body{
     .student-name{ font-size:13px; }
     .status{ width:29px; height:29px; font-size:12px; }
 }
+    /* Container Scroll Horizontal untuk Jam Pelajaran */
+.jam-container {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 2px;
+    margin-top: 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Sembunyikan scrollbar di Firefox */
+}
+
+.jam-container::-webkit-scrollbar {
+    display: none; /* Sembunyikan scrollbar di Chrome/Safari */
+}
+
+.btn-jam {
+    flex: 0 0 auto;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid #075E54;
+    background: white;
+    color: #075E54;
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-jam.active {
+    background: #075E54;
+    color: white;
+    box-shadow: 0 3px 8px rgba(7, 94, 84, 0.3);
+}
 </style>
 </head>
 
@@ -392,18 +425,19 @@ body{
                 <option value="">Semua Kelas</option>
             </select>
 
-            <select id="filterJam" class="search" style="margin-top:10px; background:#e5f2ef; font-weight:bold; color:#075E54;">
-                <option value="1">Jam 1</option>
-                <option value="2">Jam 2</option>
-                <option value="3">Jam 3</option>
-                <option value="4">Jam 4</option>
-                <option value="5">Jam 5</option>
-                <option value="6">Jam 6</option>
-                <option value="7">Jam 7</option>
-                <option value="8">Jam 8</option>
-                <option value="9">Jam 9</option>
-                <option value="10">Jam subuh </option>
-            </select>
+           <!-- Tombol Jam Pelajaran Horizontal -->
+<div class="jam-container" id="containerJam">
+    <button type="button" class="btn-jam" onclick="pilihJam('10', this)">Subuh</button>
+    <button type="button" class="btn-jam active" onclick="pilihJam('1', this)">Jam 1</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('2', this)">Jam 2</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('3', this)">Jam 3</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('4', this)">Jam 4</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('5', this)">Jam 5</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('6', this)">Jam 6</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('7', this)">Jam 7</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('8', this)">Jam 8</button>
+    <button type="button" class="btn-jam" onclick="pilihJam('9', this)">Jam 9</button>
+</div>
 
             <div style="display:flex; gap:8px; margin-top:10px;">
     <button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:0; background:#075E54; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
@@ -749,6 +783,24 @@ function filterSantri(){
         const aktif = s.status !== "nonaktif";
         return cocokNama && cocokKelas && aktif;
     });
+    // PILIH JAM PELAJARAN VIA TOMBOL HORIZONTAL
+window.pilihJam = async function(nilaiJam, element) {
+    jamPelajaran = nilaiJam;
+
+    // Ubah status tombol aktif
+    const semuaBtnJam = document.querySelectorAll('.btn-jam');
+    semuaBtnJam.forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+
+    // Tampilkan loading & muat absensi jam terpilih
+    const list = document.getElementById("studentList");
+    const labelJam = nilaiJam === '10' ? 'Subuh' : `Jam ke-${nilaiJam}`;
+    list.innerHTML = `<div class="loading">Memuat data ${labelJam}...</div>`;
+    
+    await ambilAbsensi();
+    filterSantri();
+    hitungStatistik();
+};
 
     // Mengurutkan hasil filter berdasarkan nama A-Z
     hasil.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
@@ -1536,7 +1588,6 @@ window.toggleStatusSantri = async function(id){
 
 // EVENT LISTENERS
 document.getElementById("search").addEventListener("input", filterSantri);
-document.getElementById("filterJam").addEventListener("change", async function(){
     jamPelajaran = this.value;
     const list = document.getElementById("studentList");
     list.innerHTML = `<div class="loading">Memuat data Jam ke-${jamPelajaran}...</div>`;
@@ -1556,7 +1607,7 @@ document.getElementById("filterKelas").addEventListener("change", function(){
 
 // HADIRKAN SEMUA SANTRI
 window.hadirkanSemuaSantri = async function(){
-    const jamTerpilih = document.getElementById("filterJam").value;
+    const jamTerpilih = jamPelajaran;
     const kelasTerpilih = document.getElementById("filterKelas").value;
     const kataKunci = document.getElementById("search").value.toLowerCase();
 
