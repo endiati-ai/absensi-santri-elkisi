@@ -454,12 +454,18 @@ body{
 
                 <div class="form-group">
                     <label>Komponen Nilai</label>
-                    <select id="kategoriNilai" class="input-field" onchange="muatDataInputNilai()">
+                    <select id="kategoriNilai" class="input-field" onchange="cekTampilKePilihan(); muatDataInputNilai();">
                         <option value="tugas">Tugas</option>
                         <option value="uh">Ulangan Harian (UH)</option>
                         <option value="uts">UTS</option>
                         <option value="uas">UAS</option>
                     </select>
+                </div>
+
+                <!-- Ke- (Untuk Tugas 1, 2 atau UH 1, 2) -->
+                <div class="form-group" id="groupKeNilai">
+                    <label id="labelKeNilai">Tugas Ke-</label>
+                    <input type="number" id="keNilai" class="input-field" min="1" value="1" onchange="muatDataInputNilai()">
                 </div>
             </div>
 
@@ -504,7 +510,7 @@ body{
                 <!-- Input Mata Pelajaran (Khusus Laporan Nilai) -->
                 <div class="form-group" id="groupMapelNav" style="display:none;">
                     <label>Mata Pelajaran</label>
-                    <input type="text" id="mapelLaporanNav" class="input-field" placeholder="Contoh: Fiqih (Kosongkan untuk Semua Mapel)">
+                    <input type="text" id="mapelLaporanNav" class="input-field" placeholder="Contoh: Fiqih (Wajib Diisi)">
                 </div>
 
                 <div class="form-group">
@@ -863,7 +869,7 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-// NAVIGASI HALAMAN (Beranda, Santri, Nilai, Laporan)
+// NAVIGASI HALAMAN
 window.pindahHalaman = function(halaman){
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
@@ -897,12 +903,32 @@ function siapkanHalamanNilai(){
     const selectNilai = document.getElementById("kelasNilai");
     const selectFilter = document.getElementById("filterKelas");
     selectNilai.innerHTML = selectFilter.innerHTML;
+    cekTampilKePilihan();
 }
 
-// FUNGSI INPUT NILAI SANTRI
+window.cekTampilKePilihan = function(){
+    const kat = document.getElementById("kategoriNilai").value;
+    const grpKe = document.getElementById("groupKeNilai");
+    const lblKe = document.getElementById("labelKeNilai");
+
+    if(kat === "tugas"){
+        grpKe.style.display = "block";
+        lblKe.innerText = "Tugas Ke-";
+    } else if(kat === "uh"){
+        grpKe.style.display = "block";
+        lblKe.innerText = "Ulangan Harian (UH) Ke-";
+    } else {
+        grpKe.style.display = "none";
+    }
+};
+
+// FUNGSI INPUT NILAI SANTRI (Mendukung Multi Tugas / Multi UH)
 window.muatDataInputNilai = async function(){
     const kelas = document.getElementById("kelasNilai").value;
     const mapel = document.getElementById("mapelNilai").value.trim().toLowerCase();
+    const kat = document.getElementById("kategoriNilai").value;
+    const ke = document.getElementById("keNilai").value || 1;
+    
     const area = document.getElementById("areaInputNilai");
     const btnSimpan = document.getElementById("btnSimpanNilai");
 
@@ -918,6 +944,10 @@ window.muatDataInputNilai = async function(){
         btnSimpan.style.display = "none";
         return;
     }
+
+    let fieldKey = kat;
+    if(kat === "tugas") fieldKey = `tugas_${ke}`;
+    if(kat === "uh") fieldKey = `uh_${ke}`;
 
     let existingData = {};
     try {
@@ -936,15 +966,13 @@ window.muatDataInputNilai = async function(){
             <thead>
                 <tr style="background:#075E54; color:white; text-align:center;">
                     <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
-                    <th style="padding:4px; border:1px solid #ddd; width:70px;">Nilai</th>
+                    <th style="padding:4px; border:1px solid #ddd; width:80px;">Nilai ${kat.toUpperCase()} ${ (kat==='tugas'||kat==='uh') ? ke : '' }</th>
                 </tr>
             </thead>
             <tbody>`;
 
-    const kat = document.getElementById("kategoriNilai").value;
-
     santriAktif.forEach(s => {
-        const score = (existingData[s.id] && existingData[s.id][kat]) !== undefined && existingData[s.id][kat] !== null ? existingData[s.id][kat] : "";
+        const score = (existingData[s.id] && existingData[s.id][fieldKey]) !== undefined && existingData[s.id][fieldKey] !== null ? existingData[s.id][fieldKey] : "";
         html += `
         <tr>
             <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">${s.nama}</td>
@@ -963,9 +991,14 @@ window.simpanSemuaNilai = async function(){
     const kelas = document.getElementById("kelasNilai").value;
     const mapel = document.getElementById("mapelNilai").value.trim().toLowerCase();
     const kat = document.getElementById("kategoriNilai").value;
+    const ke = document.getElementById("keNilai").value || 1;
     const inputs = document.querySelectorAll(".input-score");
 
     if(!kelas || !mapel) return;
+
+    let fieldKey = kat;
+    if(kat === "tugas") fieldKey = `tugas_${ke}`;
+    if(kat === "uh") fieldKey = `uh_${ke}`;
 
     try {
         toast("Menyimpan nilai...");
@@ -982,7 +1015,7 @@ window.simpanSemuaNilai = async function(){
                 santriId,
                 kelas,
                 mapel,
-                [kat]: nilaiVal,
+                [fieldKey]: nilaiVal,
                 updatedAt: new Date().toISOString()
             }, { merge: true });
         });
@@ -1048,8 +1081,13 @@ window.tampilkanHasilLaporan = async function(){
         }
 
         if(jenis === "nilai"){
-            // REKAP NILAI PER MAPEL
             const mapelTerpilih = document.getElementById("mapelLaporanNav").value.trim().toLowerCase();
+
+            if(!mapelTerpilih){
+                toast("Isi Mata Pelajaran terlebih dahulu!");
+                area.innerHTML = `<div class="loading">Ketik nama mata pelajaran untuk melihat rekap nilai.</div>`;
+                return;
+            }
 
             const q = query(collection(db, "nilai"));
             const snapshot = await getDocs(q);
@@ -1062,38 +1100,54 @@ window.tampilkanHasilLaporan = async function(){
                     <thead>
                         <tr style="background:#075E54; color:white;">
                             <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
-                            <th style="padding:6px; border:1px solid #ddd;">Tugas</th>
-                            <th style="padding:6px; border:1px solid #ddd;">UH</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Rata Tugas</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Rata UH</th>
                             <th style="padding:6px; border:1px solid #ddd;">UTS</th>
                             <th style="padding:6px; border:1px solid #ddd;">UAS</th>
-                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Rata-Rata</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Nilai Akhir</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
             daftarSantri.forEach(s => {
-                const records = dataNilai.filter(n => n.santriId === s.id && (!mapelTerpilih || n.mapel === mapelTerpilih));
+                const rec = dataNilai.find(n => n.santriId === s.id && n.mapel === mapelTerpilih);
                 
-                let t = "-", uh = "-", uts = "-", uas = "-";
-                if(records.length > 0){
-                    const rec = records[0];
-                    t = rec.tugas ?? "-";
-                    uh = rec.uh ?? "-";
-                    uts = rec.uts ?? "-";
-                    uas = rec.uas ?? "-";
+                let avgTugas = "-", avgUH = "-", uts = "-", uas = "-";
+
+                if(rec){
+                    // Hitung Rata-rata Tugas
+                    const listTugas = Object.keys(rec)
+                        .filter(k => k.startsWith("tugas_") && typeof rec[k] === "number")
+                        .map(k => rec[k]);
+                    if(listTugas.length > 0){
+                        avgTugas = Math.round(listTugas.reduce((a,b)=>a+b, 0) / listTugas.length);
+                    }
+
+                    // Hitung Rata-rata UH
+                    const listUH = Object.keys(rec)
+                        .filter(k => k.startsWith("uh_") && typeof rec[k] === "number")
+                        .map(k => rec[k]);
+                    if(listUH.length > 0){
+                        avgUH = Math.round(listUH.reduce((a,b)=>a+b, 0) / listUH.length);
+                    }
+
+                    uts = typeof rec.uts === "number" ? rec.uts : "-";
+                    uas = typeof rec.uas === "number" ? rec.uas : "-";
                 }
 
-                const arr = [t, uh, uts, uas].filter(v => typeof v === "number");
-                const avg = arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : "-";
+                const komponenAkhir = [avgTugas, avgUH, uts, uas].filter(v => typeof v === "number");
+                const nilaiAkhir = komponenAkhir.length > 0 
+                    ? Math.round(komponenAkhir.reduce((a, b) => a + b, 0) / komponenAkhir.length) 
+                    : "-";
 
                 html += `
                 <tr>
                     <td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>
-                    <td style="padding:6px; border:1px solid #ddd;">${t}</td>
-                    <td style="padding:6px; border:1px solid #ddd;">${uh}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${avgTugas}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${avgUH}</td>
                     <td style="padding:6px; border:1px solid #ddd;">${uts}</td>
                     <td style="padding:6px; border:1px solid #ddd;">${uas}</td>
-                    <td style="padding:6px; border:1px solid #ddd; font-weight:bold; background:#e5f2ef;">${avg}</td>
+                    <td style="padding:6px; border:1px solid #ddd; font-weight:bold; background:#e5f2ef;">${nilaiAkhir}</td>
                 </tr>`;
             });
 
