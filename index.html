@@ -404,9 +404,9 @@ body{
                 <option value="9">Jam 9</option>
                 <option value="10">Jam subuh </option>
             </select>
-<button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:10px; background:#075E54; display:flex; align-items:center; justify-content:center; gap:6px;">
-    ⚡ Hadirkan Semua Santri
-</button>
+            <button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:10px; background:#075E54; display:flex; align-items:center; justify-content:center; gap:6px;">
+                ⚡ Hadirkan Semua Santri
+            </button>
             
             <div id="studentList" style="margin-top: 10px;">
                 <div class="loading">Menghubungkan ke Firebase...</div>
@@ -434,18 +434,58 @@ body{
         </section>
     </div>
 
-    <!-- 3. HALAMAN LAPORAN (BARU) -->
+    <!-- 3. HALAMAN INPUT NILAI -->
+    <div id="pageNilai" style="display:none;">
+        <section class="section" style="margin-top:0;">
+            <div class="section-title">📝 Input Nilai Santri</div>
+
+            <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
+                <div class="form-group">
+                    <label>Filter Kelas</label>
+                    <select id="kelasNilai" class="input-field" onchange="muatDataInputNilai()">
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Mata Pelajaran</label>
+                    <input type="text" id="mapelNilai" class="input-field" placeholder="Contoh: Fiqih / Bahasa Arab" onchange="muatDataInputNilai()">
+                </div>
+
+                <div class="form-group">
+                    <label>Komponen Nilai</label>
+                    <select id="kategoriNilai" class="input-field" onchange="muatDataInputNilai()">
+                        <option value="tugas">Tugas</option>
+                        <option value="uh">Ulangan Harian (UH)</option>
+                        <option value="uts">UTS</option>
+                        <option value="uas">UAS</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="areaInputNilai">
+                <div class="loading">Pilih kelas dan isi mata pelajaran terlebih dahulu.</div>
+            </div>
+
+            <button type="button" class="btn-primary" id="btnSimpanNilai" onclick="simpanSemuaNilai()" style="display:none; margin-top:15px;">
+                💾 Simpan Semua Nilai
+            </button>
+        </section>
+    </div>
+
+    <!-- 4. HALAMAN LAPORAN -->
     <div id="pageLaporan" style="display:none;">
         <section class="section" style="margin-top:0;">
-            <div class="section-title">📊 Rekap Laporan Absensi</div>
+            <div class="section-title">📊 Rekap Laporan</div>
             
             <div style="background:white; padding:15px; border-radius:17px; box-shadow:0 3px 12px rgba(0,0,0,.04); margin-bottom:15px;">
                 <div class="form-group">
                     <label>Jenis Laporan</label>
                     <select id="jenisLaporanNav" class="input-field" onchange="sesuaikanInputLaporanNav()">
-                        <option value="harian">Harian (Per Jam 1-9)</option>
-                        <option value="mingguan">Mingguan</option>
-                        <option value="bulanan">Bulanan</option>
+                        <option value="harian">Absensi Harian (Per Jam 1-9)</option>
+                        <option value="mingguan">Absensi Mingguan</option>
+                        <option value="bulanan">Absensi Bulanan</option>
+                        <option value="nilai">Rekap Nilai Per Mapel</option>
                     </select>
                 </div>
 
@@ -459,6 +499,12 @@ body{
                 <div class="form-group" id="groupBulanNav" style="display:none;">
                     <label>Pilih Bulan & Tahun</label>
                     <input type="month" id="blnLaporanNav" class="input-field">
+                </div>
+
+                <!-- Input Mata Pelajaran (Khusus Laporan Nilai) -->
+                <div class="form-group" id="groupMapelNav" style="display:none;">
+                    <label>Mata Pelajaran</label>
+                    <input type="text" id="mapelLaporanNav" class="input-field" placeholder="Contoh: Fiqih (Kosongkan untuk Semua Mapel)">
                 </div>
 
                 <div class="form-group">
@@ -482,9 +528,9 @@ body{
 </main>
 
 <nav class="bottom-nav">
-    <nav class="bottom-nav">
     <div class="nav-item active" onclick="pindahHalaman('Beranda')"><span class="nav-icon">🏠</span>Beranda</div>
     <div class="nav-item" onclick="pindahHalaman('Santri')"><span class="nav-icon">👨‍🎓</span>Santri</div>
+    <div class="nav-item" onclick="pindahHalaman('Nilai')"><span class="nav-icon">📝</span>Nilai</div>
     <div class="nav-item" onclick="pindahHalaman('Laporan')"><span class="nav-icon">📊</span>Laporan</div>
 </nav>
 
@@ -539,47 +585,6 @@ body{
     </div>
 </div>
 
-    <!-- MODAL REKAP LAPORAN -->
-<div class="modal" id="modalRekap">
-    <div class="modal-content">
-        <div class="modal-title">📊 Rekap Laporan Absensi</div>
-        <form id="formRekap">
-            <div class="form-group">
-                <label>Jenis Laporan</label>
-                <select id="jenisLaporan" class="input-field" onchange="sesuaikanInputRekap()">
-                    <option value="harian">Harian (Per Jam Pelajaran)</option>
-                    <option value="mingguan">Mingguan</option>
-                    <option value="bulanan">Bulanan</option>
-                </select>
-            </div>
-
-            <!-- Input Tanggal Harian/Mingguan -->
-            <div class="form-group" id="groupTanggal">
-                <label>Pilih Tanggal</label>
-                <input type="date" id="tglRekap" class="input-field">
-            </div>
-
-            <!-- Input Bulan -->
-            <div class="form-group" id="groupBulan" style="display:none;">
-                <label>Pilih Bulan & Tahun</label>
-                <input type="month" id="blnRekap" class="input-field">
-            </div>
-
-            <div class="form-group">
-                <label>Filter Kelas</label>
-                <select id="kelasRekap" class="input-field">
-                    <option value="">Semua Kelas</option>
-                </select>
-            </div>
-
-            <div class="modal-buttons">
-                <button type="button" class="btn-primary btn-cancel" onclick="tutupModalRekap()">Batal</button>
-                <button type="submit" class="btn-primary" style="margin-top:0;">Tampilkan Laporan</button>
-            </div>
-        </form>
-    </div>
-</div>
-    
 <!-- MODAL HAPUS PER KELAS -->
 <div class="modal" id="modalHapusKelas">
     <div class="modal-content">
@@ -811,7 +816,6 @@ function tampilkanKelolaSantri(keyword = ""){
 
 window.ubahStatus = async function(santriId, status){
     try{
-        // ID dokumen dibuat unik gabungan tanggal, jam, dan ID santri
         const documentId = `${tanggalHariIni}_Jam${jamPelajaran}_${santriId}`;
 
         await setDoc(doc(db, "absensi", documentId), {
@@ -859,14 +863,14 @@ function hitungStatistik(){
     document.getElementById("persentase").innerText = persen + "%";
 }
 
-// NAVIGASI HALAMAN (Beranda, Santri, Laporan)
+// NAVIGASI HALAMAN (Beranda, Santri, Nilai, Laporan)
 window.pindahHalaman = function(halaman){
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
 
-    // Sembunyikan semua halaman
     document.getElementById('pageBeranda').style.display = 'none';
     document.getElementById('pageSantri').style.display = 'none';
+    document.getElementById('pageNilai').style.display = 'none';
     document.getElementById('pageLaporan').style.display = 'none';
 
     if(halaman === 'Beranda'){
@@ -878,29 +882,140 @@ window.pindahHalaman = function(halaman){
         document.getElementById('pageSantri').style.display = 'block';
         navItems[1].classList.add('active');
         tampilkanKelolaSantri();
+    } else if(halaman === 'Nilai'){
+        document.getElementById('pageNilai').style.display = 'block';
+        navItems[2].classList.add('active');
+        siapkanHalamanNilai();
     } else if(halaman === 'Laporan'){
         document.getElementById('pageLaporan').style.display = 'block';
-        navItems[2].classList.add('active');
+        navItems[3].classList.add('active');
         siapkanHalamanLaporan();
     }
 };
 
-// Fungsi penyesuaian bentuk input Laporan
+function siapkanHalamanNilai(){
+    const selectNilai = document.getElementById("kelasNilai");
+    const selectFilter = document.getElementById("filterKelas");
+    selectNilai.innerHTML = selectFilter.innerHTML;
+}
+
+// FUNGSI INPUT NILAI SANTRI
+window.muatDataInputNilai = async function(){
+    const kelas = document.getElementById("kelasNilai").value;
+    const mapel = document.getElementById("mapelNilai").value.trim().toLowerCase();
+    const area = document.getElementById("areaInputNilai");
+    const btnSimpan = document.getElementById("btnSimpanNilai");
+
+    if(!kelas || !mapel){
+        area.innerHTML = `<div class="loading">Pilih kelas dan isi mata pelajaran terlebih dahulu.</div>`;
+        btnSimpan.style.display = "none";
+        return;
+    }
+
+    const santriAktif = santri.filter(s => s.status !== "nonaktif" && s.kelas === kelas);
+    if(santriAktif.length === 0){
+        area.innerHTML = `<div class="loading">Tidak ada santri aktif di kelas ini.</div>`;
+        btnSimpan.style.display = "none";
+        return;
+    }
+
+    let existingData = {};
+    try {
+        const q = query(collection(db, "nilai"), where("kelas", "==", kelas), where("mapel", "==", mapel));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+            const val = d.data();
+            existingData[val.santriId] = val;
+        });
+    } catch(err) {
+        console.error("Gagal mengambil data nilai:", err);
+    }
+
+    let html = `<div style="background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+                <tr style="background:#075E54; color:white; text-align:center;">
+                    <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                    <th style="padding:4px; border:1px solid #ddd; width:70px;">Nilai</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    const kat = document.getElementById("kategoriNilai").value;
+
+    santriAktif.forEach(s => {
+        const score = (existingData[s.id] && existingData[s.id][kat]) !== undefined && existingData[s.id][kat] !== null ? existingData[s.id][kat] : "";
+        html += `
+        <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">${s.nama}</td>
+            <td style="padding:4px; border:1px solid #ddd;">
+                <input type="number" min="0" max="100" class="input-field input-score" data-santriid="${s.id}" value="${score}" style="text-align:center; padding:6px;">
+            </td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    area.innerHTML = html;
+    btnSimpan.style.display = "block";
+};
+
+window.simpanSemuaNilai = async function(){
+    const kelas = document.getElementById("kelasNilai").value;
+    const mapel = document.getElementById("mapelNilai").value.trim().toLowerCase();
+    const kat = document.getElementById("kategoriNilai").value;
+    const inputs = document.querySelectorAll(".input-score");
+
+    if(!kelas || !mapel) return;
+
+    try {
+        toast("Menyimpan nilai...");
+        const batch = writeBatch(db);
+
+        inputs.forEach(inp => {
+            const santriId = inp.dataset.santriid;
+            const nilaiVal = inp.value !== "" ? Number(inp.value) : null;
+            
+            const docId = `${kelas}_${mapel}_${santriId}`.replace(/\s+/g, '_');
+            const refDoc = doc(db, "nilai", docId);
+
+            batch.set(refDoc, {
+                santriId,
+                kelas,
+                mapel,
+                [kat]: nilaiVal,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        });
+
+        await batch.commit();
+        toast("Semua nilai berhasil disimpan ✓");
+    } catch(err) {
+        toast("Gagal menyimpan nilai: " + err.message);
+    }
+};
+
+// NAVIGASI KONTROL INPUT LAPORAN
 window.sesuaikanInputLaporanNav = function(){
     const jenis = document.getElementById("jenisLaporanNav").value;
     const groupTgl = document.getElementById("groupTanggalNav");
     const groupBln = document.getElementById("groupBulanNav");
+    const groupMapel = document.getElementById("groupMapelNav");
 
     if(jenis === "bulanan"){
         groupTgl.style.display = "none";
         groupBln.style.display = "block";
+        groupMapel.style.display = "none";
+    } else if(jenis === "nilai"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "none";
+        groupMapel.style.display = "block";
     } else {
         groupTgl.style.display = "block";
         groupBln.style.display = "none";
+        groupMapel.style.display = "none";
     }
 };
 
-// Fungsi menyiapkan isi filter saat menu Laporan dibuka
 function siapkanHalamanLaporan(){
     document.getElementById("tglLaporanNav").value = tanggalHariIni;
     const skrg = new Date();
@@ -922,7 +1037,6 @@ window.tampilkanHasilLaporan = async function(){
     area.innerHTML = `<div class="loading">Memuat rekap data laporan...</div>`;
 
     try {
-        // 1. Filter santri berdasarkan kelas jika dipilih
         const santriAktif = santri.filter(s => s.status !== "nonaktif");
         const daftarSantri = kelasTerpilihLaporan 
             ? santriAktif.filter(s => s.kelas === kelasTerpilihLaporan)
@@ -933,7 +1047,62 @@ window.tampilkanHasilLaporan = async function(){
             return;
         }
 
-        // 2. Ambil data absensi dari Firestore sesuai jenis laporan
+        if(jenis === "nilai"){
+            // REKAP NILAI PER MAPEL
+            const mapelTerpilih = document.getElementById("mapelLaporanNav").value.trim().toLowerCase();
+
+            const q = query(collection(db, "nilai"));
+            const snapshot = await getDocs(q);
+            let dataNilai = [];
+            snapshot.forEach(doc => dataNilai.push(doc.data()));
+
+            let html = `
+            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
+                    <thead>
+                        <tr style="background:#075E54; color:white;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Tugas</th>
+                            <th style="padding:6px; border:1px solid #ddd;">UH</th>
+                            <th style="padding:6px; border:1px solid #ddd;">UTS</th>
+                            <th style="padding:6px; border:1px solid #ddd;">UAS</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Rata-Rata</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            daftarSantri.forEach(s => {
+                const records = dataNilai.filter(n => n.santriId === s.id && (!mapelTerpilih || n.mapel === mapelTerpilih));
+                
+                let t = "-", uh = "-", uts = "-", uas = "-";
+                if(records.length > 0){
+                    const rec = records[0];
+                    t = rec.tugas ?? "-";
+                    uh = rec.uh ?? "-";
+                    uts = rec.uts ?? "-";
+                    uas = rec.uas ?? "-";
+                }
+
+                const arr = [t, uh, uts, uas].filter(v => typeof v === "number");
+                const avg = arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : "-";
+
+                html += `
+                <tr>
+                    <td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${t}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${uh}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${uts}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${uas}</td>
+                    <td style="padding:6px; border:1px solid #ddd; font-weight:bold; background:#e5f2ef;">${avg}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            area.innerHTML = html;
+            return;
+        }
+
+        // AMBIL DATA ABSENSI
         let snapshot;
         let dataAbsensi = [];
 
@@ -965,9 +1134,7 @@ window.tampilkanHasilLaporan = async function(){
             }
         });
 
-        // 3. Render Tabel Hasil Rekapan
         if(jenis === "harian"){
-            // REKAP HARIAN: Menampilkan Per Jam Pelajaran (Subuh / Jam 10 s.d. Jam 9)
             let html = `
             <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
                 <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
@@ -990,8 +1157,6 @@ window.tampilkanHasilLaporan = async function(){
 
             daftarSantri.forEach(s => {
                 html += `<tr><td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>`;
-                
-                // Urutan kolom: 10 (Subuh), lalu 1 sampai 9
                 const jamOrder = [10, 1, 2, 3, 4, 5, 6, 7, 8, 9];
                 
                 jamOrder.forEach(j => {
@@ -1017,7 +1182,6 @@ window.tampilkanHasilLaporan = async function(){
             area.innerHTML = html;
 
         } else {
-            // REKAP MINGGUAN / BULANAN: Akumulasi Total H, I, S, A
             let html = `
             <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
                 <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
@@ -1189,7 +1353,6 @@ document.getElementById("formImport").addEventListener("submit", async function(
             }
 
             const pemisah = baris[0].includes(';') ? ';' : ',';
-
             const header = baris[0].split(pemisah).map(h => h.replace(/["']/g, '').trim().toLowerCase());
             
             const idxNama = header.indexOf('nama');
@@ -1307,7 +1470,6 @@ window.toggleStatusSantri = async function(id){
 
 // EVENT LISTENERS
 document.getElementById("search").addEventListener("input", filterSantri);
-    // Listener ketika jam pelajaran diubah dari dropdown
 document.getElementById("filterJam").addEventListener("change", async function(){
     jamPelajaran = this.value;
     const list = document.getElementById("studentList");
@@ -1325,58 +1487,13 @@ document.getElementById("filterKelas").addEventListener("change", function(){
     filterSantri();
     hitungStatistik();
 });
-   // ==========================================
-// KODE UNTUK MODAL REKAP LAPORAN
-// ==========================================
 
-// 1. Fungsi untuk membuka jendela modal rekap
-window.bukaModalRekap = function(){
-    siapkanFilterKelas();
-    
-    // Set default tanggal hari ini & bulan ini
-    document.getElementById("tglRekap").value = tanggalHariIni;
-    const skrg = new Date();
-    const formatBulan = skrg.getFullYear() + "-" + String(skrg.getMonth() + 1).padStart(2, '0');
-    document.getElementById("blnRekap").value = formatBulan;
-    
-    // Salin daftar kelas ke pilihan di modal rekap
-    const selectRekap = document.getElementById("kelasRekap");
-    const selectFilter = document.getElementById("filterKelas");
-    selectRekap.innerHTML = selectFilter.innerHTML;
-
-    // Tampilkan jendela modal
-    document.getElementById("modalRekap").style.display = "flex";
-};
-
-// 2. Fungsi untuk menutup jendela modal rekap
-window.tutupModalRekap = function(){
-    document.getElementById("modalRekap").style.display = "none";
-};
-
-// 3. Fungsi untuk menyesuaikan pilihan (Harian/Mingguan/Bulanan)
-window.sesuaikanInputRekap = function(){
-    const jenis = document.getElementById("jenisLaporan").value;
-    const groupTgl = document.getElementById("groupTanggal");
-    const groupBln = document.getElementById("groupBulan");
-
-    if(jenis === "bulanan"){
-        groupTgl.style.display = "none";
-        groupBln.style.display = "block";
-    } else {
-        groupTgl.style.display = "block";
-        groupBln.style.display = "none";
-    }
-};
-
-    // ... kode-kode JavaScript sebelumnya ...
-
-// FUNGSI HADIRKAN SEMUA SANTRI (SEKALI KLIK DENGAN CEPAT)
+// HADIRKAN SEMUA SANTRI
 window.hadirkanSemuaSantri = async function(){
     const jamTerpilih = document.getElementById("filterJam").value;
     const kelasTerpilih = document.getElementById("filterKelas").value;
     const kataKunci = document.getElementById("search").value.toLowerCase();
 
-    // 1. Filter santri yang sedang tampil di layar
     let daftarTarget = santri.filter(s => s.status !== "nonaktif");
 
     if(kelasTerpilih){
@@ -1392,10 +1509,8 @@ window.hadirkanSemuaSantri = async function(){
     }
 
     try {
-        // Tampilkan indikator loading cepat di tombol
         toast("Sedang memproses...");
 
-        // 2. Simpan status HADIR untuk setiap santri
         const janjiSimpan = daftarTarget.map(async (s) => {
             const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
             const refAbsen = doc(db, "absensi", documentId);
@@ -1409,7 +1524,6 @@ window.hadirkanSemuaSantri = async function(){
                 updatedAt: new Date().toISOString()
             });
 
-            // Update memori lokal
             absensiHariIni[s.id] = "hadir";
         });
 
@@ -1417,7 +1531,6 @@ window.hadirkanSemuaSantri = async function(){
 
         toast(`Semua santri (${daftarTarget.length}) langsung HADIR ✓`);
         
-        // Refresh daftar dan statistik
         filterSantri();
         hitungStatistik();
 
