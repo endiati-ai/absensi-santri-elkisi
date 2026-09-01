@@ -1586,24 +1586,154 @@ window.toggleStatusSantri = async function(id){
     }
 };
 
-// EVENT LISTENERS
+// ==========================================
+// EVENT LISTENERS & FUNGSI TOMBOL
+// ==========================================
+
+// 1. Pencarian Santri di Halaman Beranda
 document.getElementById("search").addEventListener("input", filterSantri);
-    jamPelajaran = this.value;
-    const list = document.getElementById("studentList");
-    list.innerHTML = `<div class="loading">Memuat data Jam ke-${jamPelajaran}...</div>`;
-    
-    await ambilAbsensi();
-    filterSantri();
-    hitungStatistik();
-});
+
+// 2. Pencarian Santri di Halaman Kelola Santri
 document.getElementById("searchManage").addEventListener("input", function(){
     tampilkanKelolaSantri(this.value);
 });
+
+// 3. Filter Kelas di Halaman Beranda
 document.getElementById("filterKelas").addEventListener("change", function(){
     kelasTerpilih = this.value;
     filterSantri();
     hitungStatistik();
 });
+
+// 4. Fungsi Pilih Jam Pelajaran (Tombol Horizontal)
+window.pilihJam = async function(nilaiJam, element) {
+    jamPelajaran = nilaiJam;
+
+    // Ubah status kelas tombol aktif
+    const semuaBtnJam = document.querySelectorAll('.btn-jam');
+    semuaBtnJam.forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+
+    // Tampilkan indikator loading dan muat data absensi
+    const list = document.getElementById("studentList");
+    const labelJam = nilaiJam === '10' ? 'Subuh' : `Jam ke-${nilaiJam}`;
+    list.innerHTML = `<div class="loading">Memuat data ${labelJam}...</div>`;
+    
+    await ambilAbsensi();
+    filterSantri();
+    hitungStatistik();
+};
+
+// 5. Fungsi Hadirkan Semua Santri
+window.hadirkanSemuaSantri = async function(){
+    const jamTerpilih = jamPelajaran;
+    const kelasTerpilih = document.getElementById("filterKelas").value;
+    const kataKunci = document.getElementById("search").value.toLowerCase();
+
+    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
+
+    if(kelasTerpilih){
+        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
+    }
+    if(kataKunci){
+        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
+    }
+
+    if(daftarTarget.length === 0){
+        toast("Tidak ada santri yang dapat diproses!");
+        return;
+    }
+
+    try {
+        toast("Sedang memproses...");
+
+        const janjiSimpan = daftarTarget.map(async (s) => {
+            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
+            const refAbsen = doc(db, "absensi", documentId);
+            
+            await setDoc(refAbsen, {
+                santriId: s.id,
+                tanggal: tanggalHariIni,
+                jam: jamTerpilih,
+                status: "hadir",
+                userId: user.uid,
+                updatedAt: new Date().toISOString()
+            });
+
+            absensiHariIni[s.id] = "hadir";
+        });
+
+        await Promise.all(janjiSimpan);
+
+        toast(`Semua santri (${daftarTarget.length}) langsung HADIR ✓`);
+        
+        filterSantri();
+        hitungStatistik();
+
+    } catch(err) {
+        toast("Gagal memproses: " + err.message);
+    }
+};
+
+// 6. Fungsi Reset / Hapus Status Absensi
+window.resetSemuaAbsensiSantri = async function(){
+    const jamTerpilih = jamPelajaran;
+    const kelasTerpilih = document.getElementById("filterKelas").value;
+    const kataKunci = document.getElementById("search").value.toLowerCase();
+
+    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
+
+    if(kelasTerpilih){
+        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
+    }
+    if(kataKunci){
+        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
+    }
+
+    if(daftarTarget.length === 0){
+        toast("Tidak ada santri yang dapat diproses!");
+        return;
+    }
+
+    if(!confirm(`Apakah Anda yakin ingin menghapus/mengosongkan status absensi untuk ${daftarTarget.length} santri pada Jam ke-${jamTerpilih === '10' ? 'Subuh' : jamTerpilih}?`)){
+        return;
+    }
+
+    try {
+        toast("Mengosongkan absensi...");
+
+        let batch = writeBatch(db);
+        let count = 0;
+
+        for(const s of daftarTarget){
+            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
+            const refAbsen = doc(db, "absensi", documentId);
+            
+            batch.delete(refAbsen);
+            delete absensiHariIni[s.id];
+            count++;
+
+            if(count === 400){
+                await batch.commit();
+                batch = writeBatch(db);
+                count = 0;
+            }
+        }
+
+        if(count > 0){
+            await batch.commit();
+        }
+
+        toast(`Status absensi ${daftarTarget.length} santri berhasil di-reset ✓`);
+        
+        filterSantri();
+        hitungStatistik();
+
+    } catch(err) {
+        toast("Gagal menghapus status: " + err.message);
+        tampilError("Reset Absensi Error: " + err.message);
+    }
+};
 
 // HADIRKAN SEMUA SANTRI
 window.hadirkanSemuaSantri = async function(){
