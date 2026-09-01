@@ -1090,26 +1090,25 @@ window.simpanSemuaNilai = async function(){
     }
 };
 
-window.sesuaikanInputLaporanNav = function() {
+// NAVIGASI KONTROL INPUT LAPORAN
+window.sesuaikanInputLaporanNav = function(){
     const jenis = document.getElementById("jenisLaporanNav").value;
-    
-    // Elemen Input Form
-    const groupTanggal = document.getElementById("groupTanggalNav");
-    const groupBulan = document.getElementById("groupBulanNav");
+    const groupTgl = document.getElementById("groupTanggalNav");
+    const groupBln = document.getElementById("groupBulanNav");
     const groupMapel = document.getElementById("groupMapelNav");
 
-    if (jenis === "harian" || jenis === "mingguan") {
-        groupTanggal.style.display = "block";
-        groupBulan.style.display = "none";
+    if(jenis === "bulanan"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "block";
         groupMapel.style.display = "none";
-    } else if (jenis === "bulanan") {
-        groupTanggal.style.display = "none";
-        groupBulan.style.display = "block";
+    } else if(jenis === "nilai"){
+        groupTgl.style.display = "none";
+        groupBln.style.display = "none";
+        groupMapel.style.display = "block";
+    } else {
+        groupTgl.style.display = "block";
+        groupBln.style.display = "none";
         groupMapel.style.display = "none";
-    } else if (jenis === "nilai") {
-        groupTanggal.style.display = "none";
-        groupBulan.style.display = "none";
-        groupMapel.style.display = "block"; // Tampilkan input Mata Pelajaran
     }
 };
 
@@ -1124,173 +1123,97 @@ function siapkanHalamanLaporan(){
     selectLaporan.innerHTML = selectFilter.innerHTML;
 }
 
-// ==========================================
-// FUNGSI MENAMPILKAN REKAP LAPORAN
-// ==========================================
-// 1. DAFTARKAN FUNGSI PINDAH HALAMAN (Wajib di window agar dibaca onclick HTML)
-window.pindahHalaman = function(namaHalaman) {
-    // Sembunyikan semua halaman terlebih dahulu
-    const halamanList = ['Beranda', 'Santri', 'Nilai', 'Laporan'];
-    halamanList.forEach(hal => {
-        const el = document.getElementById('page' + hal);
-        if (el) el.style.display = 'none';
-    });
-
-    // Tampilkan halaman yang dipilih
-    const targetPage = document.getElementById('page' + namaHalaman);
-    if (targetPage) {
-        targetPage.style.display = 'block';
-    }
-
-    // Update status aktif pada bottom-nav
-    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-    navItems.forEach(item => item.classList.remove('active'));
-    
-    // Set aktif pada menu yang diklik
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-    }
-};
-
-// 2. FUNGSI SESUAIKAN INPUT FORM
-window.sesuaikanInputLaporanNav = function() {
+window.tampilkanHasilLaporan = async function(){
+    const area = document.getElementById("areaHasilLaporan");
     const jenis = document.getElementById("jenisLaporanNav").value;
-    const groupTanggal = document.getElementById("groupTanggalNav");
-    const groupBulan = document.getElementById("groupBulanNav");
-    const groupMapel = document.getElementById("groupMapelNav");
+    const kelasTerpilihLaporan = document.getElementById("kelasLaporanNav").value;
+    const tglTerpilih = document.getElementById("tglLaporanNav").value;
+    const blnTerpilih = document.getElementById("blnLaporanNav").value;
 
-    if (jenis === "harian" || jenis === "mingguan") {
-        groupTanggal.style.display = "block";
-        groupBulan.style.display = "none";
-        groupMapel.style.display = "none";
-    } else if (jenis === "bulanan") {
-        groupTanggal.style.display = "none";
-        groupBulan.style.display = "block";
-        groupMapel.style.display = "none";
-    } else if (jenis === "nilai") {
-        groupTanggal.style.display = "none";
-        groupBulan.style.display = "none";
-        groupMapel.style.display = "block";
-    }
-};
+    area.innerHTML = `<div class="loading">Memuat rekap data laporan...</div>`;
 
-// 3. FUNGSI TAMPILKAN HASIL LAPORAN
-window.tampilkanHasilLaporan = async function() {
-    const jenis = document.getElementById("jenisLaporanNav").value;
-    const areaHasil = document.getElementById("areaHasilLaporan");
+    try {
+        const santriAktif = santri.filter(s => s.status !== "nonaktif");
+        let daftarSantri = kelasTerpilihLaporan 
+            ? santriAktif.filter(s => s.kelas === kelasTerpilihLaporan)
+            : santriAktif;
 
-    if (jenis === "nilai") {
-        const mapel = document.getElementById("mapelLaporanNav").value.trim();
-        const kelas = document.getElementById("kelasLaporanNav").value;
-
-        if (!mapel) {
-            toast("Harap isi Mata Pelajaran!");
-            return; // Return ini SAH karena berada DI DALAM function
+        if(daftarSantri.length === 0){
+            area.innerHTML = `<div class="loading">Tidak ada data santri untuk kelas ini.</div>`;
+            return;
         }
 
-        areaHasil.innerHTML = `<div class="loading">Memuat rekap nilai ${mapel}...</div>`;
+        // Pengurutan daftar santri secara Alfabetis A-Z untuk laporan
+        daftarSantri.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
-        try {
-            const q = query(collection(db, "nilai"), where("mapel", "==", mapel));
-            const querySnapshot = await getDocs(q);
+        if(jenis === "nilai"){
+            const mapelTerpilih = document.getElementById("mapelLaporanNav").value.trim().toLowerCase();
 
-            let rekapData = {};
-            let maxTugas = 0;
-            let maxUlangan = 0;
-
-            querySnapshot.forEach((docSnap) => {
-                const d = docSnap.data();
-                if (kelas && d.kelas !== kelas) return; // Return dalam forEach juga SAH
-
-                if (!rekapData[d.santriId]) {
-                    rekapData[d.santriId] = {
-                        nama: d.namaSantri || "Tanpa Nama",
-                        kelas: d.kelas || "-",
-                        tugas: [],
-                        ulangan: []
-                    };
-                }
-
-                if (d.jenis === "tugas") {
-                    rekapData[d.santriId].tugas.push(Number(d.nilai));
-                    if (rekapData[d.santriId].tugas.length > maxTugas) {
-                        maxTugas = rekapData[d.santriId].tugas.length;
-                    }
-                } else if (d.jenis === "ulangan") {
-                    rekapData[d.santriId].ulangan.push(Number(d.nilai));
-                    if (rekapData[d.santriId].ulangan.length > maxUlangan) {
-                        maxUlangan = rekapData[d.santriId].ulangan.length;
-                    }
-                }
-            });
-
-            if (maxTugas === 0) maxTugas = 1;
-            if (maxUlangan === 0) maxUlangan = 1;
-
-            const santriKeys = Object.keys(rekapData);
-
-            if (santriKeys.length === 0) {
-                areaHasil.innerHTML = `<div style="text-align:center; padding:20px; color:#666; background:white; border-radius:12px; margin-top:15px;">Data nilai tidak ditemukan.</div>`;
+            if(!mapelTerpilih){
+                toast("Isi Mata Pelajaran terlebih dahulu!");
+                area.innerHTML = `<div class="loading">Ketik nama mata pelajaran untuk melihat rekap nilai.</div>`;
                 return;
             }
 
-            let htmlTabel = `
-            <div style="overflow-x:auto; margin-top:15px; background:white; padding:12px; border-radius:12px;">
-                <table border="1" style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-color:#ddd;">
+            const q = query(collection(db, "nilai"));
+            const snapshot = await getDocs(q);
+            let dataNilai = [];
+            snapshot.forEach(doc => dataNilai.push(doc.data()));
+
+            let html = `
+            <div style="overflow-x:auto; background:white; border-radius:14px; padding:10px; box-shadow:0 3px 12px rgba(0,0,0,.04);">
+                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
                     <thead>
                         <tr style="background:#075E54; color:white;">
-                            <th rowspan="2" style="padding:8px;">No</th>
-                            <th rowspan="2" style="padding:8px;">Nama Santri</th>
-                            <th colspan="${maxTugas}">Nilai Tugas</th>
-                            <th colspan="${maxUlangan}">Nilai Ulangan</th>
-                            <th rowspan="2" style="padding:8px;">Rata-Rata</th>
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Nama Santri</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Rata Tugas</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Rata UH</th>
+                            <th style="padding:6px; border:1px solid #ddd;">UTS</th>
+                            <th style="padding:6px; border:1px solid #ddd;">UAS</th>
+                            <th style="padding:6px; border:1px solid #ddd; background:#0e6231;">Nilai Akhir</th>
                         </tr>
-                        <tr style="background:#128C7E; color:white;">`;
+                    </thead>
+                    <tbody>`;
 
-            for (let i = 1; i <= maxTugas; i++) {
-                htmlTabel += `<th style="padding:5px;">T${i}</th>`;
-            }
-            for (let i = 1; i <= maxUlangan; i++) {
-                htmlTabel += `<th style="padding:5px;">UH${i}</th>`;
-            }
+            daftarSantri.forEach(s => {
+                const rec = dataNilai.find(n => n.santriId === s.id && n.mapel === mapelTerpilih);
+                
+                let avgTugas = "-", avgUH = "-", uts = "-", uas = "-";
 
-            htmlTabel += `</tr></thead><tbody>`;
+                if(rec){
+                    const listTugas = Object.keys(rec)
+                        .filter(k => k.startsWith("tugas_") && typeof rec[k] === "number")
+                        .map(k => rec[k]);
+                    if(listTugas.length > 0){
+                        avgTugas = Math.round(listTugas.reduce((a,b)=>a+b, 0) / listTugas.length);
+                    }
 
-            let no = 1;
-            santriKeys.forEach((id) => {
-                const s = rekapData[id];
-                let totalNilai = 0;
-                let countNilai = 0;
+                    const listUH = Object.keys(rec)
+                        .filter(k => k.startsWith("uh_") && typeof rec[k] === "number")
+                        .map(k => rec[k]);
+                    if(listUH.length > 0){
+                        avgUH = Math.round(listUH.reduce((a,b)=>a+b, 0) / listUH.length);
+                    }
 
-                htmlTabel += `<tr>
-                    <td style="padding:6px;">${no++}</td>
-                    <td style="padding:6px; text-align:left;"><b>${s.nama}</b></td>`;
-
-                for (let i = 0; i < maxTugas; i++) {
-                    const val = s.tugas[i] !== undefined ? s.tugas[i] : "-";
-                    htmlTabel += `<td style="padding:6px;">${val}</td>`;
-                    if (typeof val === 'number') { totalNilai += val; countNilai++; }
+                    uts = typeof rec.uts === "number" ? rec.uts : "-";
+                    uas = typeof rec.uas === "number" ? rec.uas : "-";
                 }
 
-                for (let i = 0; i < maxUlangan; i++) {
-                    const val = s.ulangan[i] !== undefined ? s.ulangan[i] : "-";
-                    htmlTabel += `<td style="padding:6px;">${val}</td>`;
-                    if (typeof val === 'number') { totalNilai += val; countNilai++; }
-                }
+                const komponenAkhir = [avgTugas, avgUH, uts, uas].filter(v => typeof v === "number");
+                const nilaiAkhir = komponenAkhir.length > 0 
+                    ? Math.round(komponenAkhir.reduce((a, b) => a + b, 0) / komponenAkhir.length) 
+                    : "-";
 
-                const avg = countNilai > 0 ? (totalNilai / countNilai).toFixed(1) : "-";
-                htmlTabel += `<td style="padding:6px; background:#e5f2ef;"><b>${avg}</b></td></tr>`;
+                html += `
+                <tr>
+                    <td style="padding:8px; border:1px solid #ddd; text-align:left; font-weight:bold;">${s.nama}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${avgTugas}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${avgUH}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${uts}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${uas}</td>
+                    <td style="padding:6px; border:1px solid #ddd; font-weight:bold; background:#e5f2ef;">${nilaiAkhir}</td>
+                </tr>`;
             });
-
-            htmlTabel += `</tbody></table></div>`;
-            areaHasil.innerHTML = htmlTabel;
-
-        } catch (err) {
-            toast("Gagal memuat rekap nilai: " + err.message);
-            areaHasil.innerHTML = `<div class="error">Error: ${err.message}</div>`;
-        }
-    }
-};
 
             html += `</tbody></table></div>`;
             area.innerHTML = html;
