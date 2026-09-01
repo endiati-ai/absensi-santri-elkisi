@@ -404,9 +404,15 @@ body{
                 <option value="9">Jam 9</option>
                 <option value="10">Jam subuh </option>
             </select>
-            <button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:10px; background:#075E54; display:flex; align-items:center; justify-content:center; gap:6px;">
-                ⚡ Hadirkan Semua Santri
-            </button>
+
+            <div style="display:flex; gap:8px; margin-top:10px;">
+    <button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:0; background:#075E54; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
+        ⚡ Hadirkan Semua
+    </button>
+    <button type="button" class="btn-primary" onclick="resetSemuaAbsensiSantri()" style="margin-top:0; background:#a00000; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
+        🗑️ Reset Absensi
+    </button>
+</div>
             
             <div id="studentList" style="margin-top: 10px;">
                 <div class="loading">Menghubungkan ke Firebase...</div>
@@ -1596,6 +1602,70 @@ window.hadirkanSemuaSantri = async function(){
 
     } catch(err) {
         toast("Gagal memproses: " + err.message);
+    }
+};
+
+    // RESET / HILANGKAN STATUS ABSENSI SEMUA SANTRI TERFILTER
+window.resetSemuaAbsensiSantri = async function(){
+    const jamTerpilih = document.getElementById("filterJam").value;
+    const kelasTerpilih = document.getElementById("filterKelas").value;
+    const kataKunci = document.getElementById("search").value.toLowerCase();
+
+    // Filter santri aktif yang sedang tampil
+    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
+
+    if(kelasTerpilih){
+        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
+    }
+    if(kataKunci){
+        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
+    }
+
+    if(daftarTarget.length === 0){
+        toast("Tidak ada santri yang dapat diproses!");
+        return;
+    }
+
+    // Konfirmasi sebelum menghapus
+    if(!confirm(`Apakah Anda yakin ingin menghapus/mengosongkan status absensi untuk ${daftarTarget.length} santri pada Jam ke-${jamTerpilih}?`)){
+        return;
+    }
+
+    try {
+        toast("Mengosongkan absensi...");
+
+        // Gunakan batch delete agar proses ke Firestore lebih cepat dan efisien
+        let batch = writeBatch(db);
+        let count = 0;
+
+        for(const s of daftarTarget){
+            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
+            const refAbsen = doc(db, "absensi", documentId);
+            
+            batch.delete(refAbsen);
+            delete absensiHariIni[s.id]; // Hapus dari memori lokal
+            count++;
+
+            // Commit setiap kelipatan 400 dokumen
+            if(count === 400){
+                await batch.commit();
+                batch = writeBatch(db);
+                count = 0;
+            }
+        }
+
+        if(count > 0){
+            await batch.commit();
+        }
+
+        toast(`Status absensi ${daftarTarget.length} santri berhasil di-reset ✓`);
+        
+        filterSantri();
+        hitungStatistik();
+
+    } catch(err) {
+        toast("Gagal menghapus status: " + err.message);
+        tampilError("Reset Absensi Error: " + err.message);
     }
 };
 
