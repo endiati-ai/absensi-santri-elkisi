@@ -462,7 +462,6 @@ body{
                     </select>
                 </div>
 
-                <!-- Ke- (Untuk Tugas 1, 2 atau UH 1, 2) -->
                 <div class="form-group" id="groupKeNilai">
                     <label id="labelKeNilai">Tugas Ke-</label>
                     <input type="number" id="keNilai" class="input-field" min="1" value="1" onchange="muatDataInputNilai()">
@@ -495,19 +494,16 @@ body{
                     </select>
                 </div>
 
-                <!-- Input Tanggal Harian/Mingguan -->
                 <div class="form-group" id="groupTanggalNav">
                     <label>Pilih Tanggal</label>
                     <input type="date" id="tglLaporanNav" class="input-field">
                 </div>
 
-                <!-- Input Bulan -->
                 <div class="form-group" id="groupBulanNav" style="display:none;">
                     <label>Pilih Bulan & Tahun</label>
                     <input type="month" id="blnLaporanNav" class="input-field">
                 </div>
 
-                <!-- Input Mata Pelajaran (Khusus Laporan Nilai) -->
                 <div class="form-group" id="groupMapelNav" style="display:none;">
                     <label>Mata Pelajaran</label>
                     <input type="text" id="mapelLaporanNav" class="input-field" placeholder="Contoh: Fiqih (Wajib Diisi)">
@@ -525,7 +521,6 @@ body{
                 </button>
             </div>
 
-            <!-- Tempat Menampilkan Tabel Laporan -->
             <div id="areaHasilLaporan"></div>
         </section>
     </div>
@@ -688,6 +683,8 @@ async function ambilDataSantri(){
         santri = [];
     } else {
         santri = snapshot.docs.map(item => ({ id: item.id, status: item.data().status || "aktif", ...item.data() }));
+        // Mengurutkan data santri secara keseluruhan berdasarkan nama A-Z
+        santri.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
     }
 }
 
@@ -747,6 +744,9 @@ function filterSantri(){
         return cocokNama && cocokKelas && aktif;
     });
 
+    // Mengurutkan hasil filter berdasarkan nama A-Z
+    hasil.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
+
     tampilkanSantri(hasil);
 }
 
@@ -790,6 +790,8 @@ function tampilkanKelolaSantri(keyword = ""){
     list.innerHTML = "";
 
     const hasil = santri.filter(s => s.nama.toLowerCase().includes(keyword.toLowerCase().trim()));
+    // Pengurutan nama A-Z
+    hasil.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
     if(hasil.length === 0){
         list.innerHTML = `<div class="loading">Data santri tidak ditemukan.</div>`;
@@ -922,7 +924,7 @@ window.cekTampilKePilihan = function(){
     }
 };
 
-// FUNGSI INPUT NILAI SANTRI (Mendukung Multi Tugas / Multi UH)
+// FUNGSI INPUT NILAI SANTRI (Diurutkan A-Z)
 window.muatDataInputNilai = async function(){
     const kelas = document.getElementById("kelasNilai").value;
     const mapel = document.getElementById("mapelNilai").value.trim().toLowerCase();
@@ -944,6 +946,9 @@ window.muatDataInputNilai = async function(){
         btnSimpan.style.display = "none";
         return;
     }
+
+    // Urutkan nama santri secara Alfabetis A-Z
+    santriAktif.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
     let fieldKey = kat;
     if(kat === "tugas") fieldKey = `tugas_${ke}`;
@@ -1071,7 +1076,7 @@ window.tampilkanHasilLaporan = async function(){
 
     try {
         const santriAktif = santri.filter(s => s.status !== "nonaktif");
-        const daftarSantri = kelasTerpilihLaporan 
+        let daftarSantri = kelasTerpilihLaporan 
             ? santriAktif.filter(s => s.kelas === kelasTerpilihLaporan)
             : santriAktif;
 
@@ -1079,6 +1084,9 @@ window.tampilkanHasilLaporan = async function(){
             area.innerHTML = `<div class="loading">Tidak ada data santri untuk kelas ini.</div>`;
             return;
         }
+
+        // Pengurutan daftar santri secara Alfabetis A-Z untuk laporan
+        daftarSantri.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
         if(jenis === "nilai"){
             const mapelTerpilih = document.getElementById("mapelLaporanNav").value.trim().toLowerCase();
@@ -1115,7 +1123,6 @@ window.tampilkanHasilLaporan = async function(){
                 let avgTugas = "-", avgUH = "-", uts = "-", uas = "-";
 
                 if(rec){
-                    // Hitung Rata-rata Tugas
                     const listTugas = Object.keys(rec)
                         .filter(k => k.startsWith("tugas_") && typeof rec[k] === "number")
                         .map(k => rec[k]);
@@ -1123,7 +1130,6 @@ window.tampilkanHasilLaporan = async function(){
                         avgTugas = Math.round(listTugas.reduce((a,b)=>a+b, 0) / listTugas.length);
                     }
 
-                    // Hitung Rata-rata UH
                     const listUH = Object.keys(rec)
                         .filter(k => k.startsWith("uh_") && typeof rec[k] === "number")
                         .map(k => rec[k]);
