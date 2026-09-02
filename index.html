@@ -343,7 +343,7 @@ body{
     .student-name{ font-size:13px; }
     .status{ width:29px; height:29px; font-size:12px; }
 }
-    /* Container Scroll Horizontal untuk Jam Pelajaran */
+
 .jam-container {
     display: flex;
     gap: 8px;
@@ -351,11 +351,11 @@ body{
     padding: 6px 2px;
     margin-top: 10px;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Sembunyikan scrollbar di Firefox */
+    scrollbar-width: none;
 }
 
 .jam-container::-webkit-scrollbar {
-    display: none; /* Sembunyikan scrollbar di Chrome/Safari */
+    display: none;
 }
 
 .btn-jam {
@@ -391,7 +391,6 @@ body{
 
 <main class="container">
 
-    <!-- 1. HALAMAN BERANDA / ABSENSI -->
     <div id="pageBeranda">
         <section class="summary">
             <div class="summary-title">Kehadiran Hari Ini</div>
@@ -425,28 +424,27 @@ body{
                 <option value="">Semua Kelas</option>
             </select>
 
-           <!-- Tombol Jam Pelajaran Horizontal -->
-<div class="jam-container" id="containerJam">
-    <button type="button" class="btn-jam" onclick="pilihJam('10', this)">Subuh</button>
-    <button type="button" class="btn-jam active" onclick="pilihJam('1', this)">Jam 1</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('2', this)">Jam 2</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('3', this)">Jam 3</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('4', this)">Jam 4</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('5', this)">Jam 5</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('6', this)">Jam 6</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('7', this)">Jam 7</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('8', this)">Jam 8</button>
-    <button type="button" class="btn-jam" onclick="pilihJam('9', this)">Jam 9</button>
-</div>
+            <div class="jam-container" id="containerJam">
+                <button type="button" class="btn-jam" onclick="pilihJam('10', this)">Subuh</button>
+                <button type="button" class="btn-jam active" onclick="pilihJam('1', this)">Jam 1</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('2', this)">Jam 2</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('3', this)">Jam 3</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('4', this)">Jam 4</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('5', this)">Jam 5</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('6', this)">Jam 6</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('7', this)">Jam 7</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('8', this)">Jam 8</button>
+                <button type="button" class="btn-jam" onclick="pilihJam('9', this)">Jam 9</button>
+            </div>
 
             <div style="display:flex; gap:8px; margin-top:10px;">
-    <button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:0; background:#075E54; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
-        ⚡ Hadirkan Semua
-    </button>
-    <button type="button" class="btn-primary" onclick="resetSemuaAbsensiSantri()" style="margin-top:0; background:#a00000; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
-        🗑️ Reset Absensi
-    </button>
-</div>
+                <button type="button" class="btn-primary" onclick="hadirkanSemuaSantri()" style="margin-top:0; background:#075E54; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    ⚡ Hadirkan Semua
+                </button>
+                <button type="button" class="btn-primary" onclick="resetSemuaAbsensiSantri()" style="margin-top:0; background:#a00000; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    🗑️ Reset Absensi
+                </button>
+            </div>
             
             <div id="studentList" style="margin-top: 10px;">
                 <div class="loading">Menghubungkan ke Firebase...</div>
@@ -454,7 +452,6 @@ body{
         </section>
     </div>
 
-    <!-- 2. HALAMAN KELOLA SANTRI -->
     <div id="pageSantri" style="display:none;">
         <section class="section" style="margin-top:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -474,7 +471,6 @@ body{
         </section>
     </div>
 
-    <!-- 3. HALAMAN INPUT NILAI -->
     <div id="pageNilai" style="display:none;">
         <section class="section" style="margin-top:0;">
             <div class="section-title">📝 Input Nilai Santri</div>
@@ -518,7 +514,6 @@ body{
         </section>
     </div>
 
-    <!-- 4. HALAMAN LAPORAN -->
     <div id="pageLaporan" style="display:none;">
         <section class="section" style="margin-top:0;">
             <div class="section-title">📊 Rekap Laporan</div>
@@ -577,7 +572,6 @@ body{
 
 <div class="toast" id="toast"></div>
 
-<!-- MODAL TAMBAH / EDIT SANTRI -->
 <div class="modal" id="modalSantri">
     <div class="modal-content">
         <div class="modal-title" id="modalTitle">Tambah Santri</div>
@@ -603,7 +597,6 @@ body{
     </div>
 </div>
 
-<!-- MODAL IMPORT CSV -->
 <div class="modal" id="modalImport">
     <div class="modal-content">
         <div class="modal-title">Import Data Santri (CSV)</div>
@@ -626,7 +619,6 @@ body{
     </div>
 </div>
 
-<!-- MODAL HAPUS PER KELAS -->
 <div class="modal" id="modalHapusKelas">
     <div class="modal-content">
         <div class="modal-title" style="color:#a00000;">🗑️ Hapus Data Per Kelas</div>
@@ -723,7 +715,6 @@ async function ambilDataSantri(){
         santri = [];
     } else {
         santri = snapshot.docs.map(item => ({ id: item.id, status: item.data().status || "aktif", ...item.data() }));
-        // Mengurutkan data santri secara keseluruhan berdasarkan nama A-Z
         santri.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
     }
 }
@@ -783,28 +774,8 @@ function filterSantri(){
         const aktif = s.status !== "nonaktif";
         return cocokNama && cocokKelas && aktif;
     });
-    // PILIH JAM PELAJARAN VIA TOMBOL HORIZONTAL
-window.pilihJam = async function(nilaiJam, element) {
-    jamPelajaran = nilaiJam;
 
-    // Ubah status tombol aktif
-    const semuaBtnJam = document.querySelectorAll('.btn-jam');
-    semuaBtnJam.forEach(btn => btn.classList.remove('active'));
-    element.classList.add('active');
-
-    // Tampilkan loading & muat absensi jam terpilih
-    const list = document.getElementById("studentList");
-    const labelJam = nilaiJam === '10' ? 'Subuh' : `Jam ke-${nilaiJam}`;
-    list.innerHTML = `<div class="loading">Memuat data ${labelJam}...</div>`;
-    
-    await ambilAbsensi();
-    filterSantri();
-    hitungStatistik();
-};
-
-    // Mengurutkan hasil filter berdasarkan nama A-Z
     hasil.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
-
     tampilkanSantri(hasil);
 }
 
@@ -848,7 +819,6 @@ function tampilkanKelolaSantri(keyword = ""){
     list.innerHTML = "";
 
     const hasil = santri.filter(s => s.nama.toLowerCase().includes(keyword.toLowerCase().trim()));
-    // Pengurutan nama A-Z
     hasil.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
     if(hasil.length === 0){
@@ -982,7 +952,6 @@ window.cekTampilKePilihan = function(){
     }
 };
 
-// FUNGSI INPUT NILAI SANTRI (Diurutkan A-Z)
 window.muatDataInputNilai = async function(){
     const kelas = document.getElementById("kelasNilai").value;
     const mapel = document.getElementById("mapelNilai").value.trim().toLowerCase();
@@ -1005,7 +974,6 @@ window.muatDataInputNilai = async function(){
         return;
     }
 
-    // Urutkan nama santri secara Alfabetis A-Z
     santriAktif.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
     let fieldKey = kat;
@@ -1090,7 +1058,6 @@ window.simpanSemuaNilai = async function(){
     }
 };
 
-// NAVIGASI KONTROL INPUT LAPORAN
 window.sesuaikanInputLaporanNav = function(){
     const jenis = document.getElementById("jenisLaporanNav").value;
     const groupTgl = document.getElementById("groupTanggalNav");
@@ -1143,7 +1110,6 @@ window.tampilkanHasilLaporan = async function(){
             return;
         }
 
-        // Pengurutan daftar santri secara Alfabetis A-Z untuk laporan
         daftarSantri.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
 
         if(jenis === "nilai"){
@@ -1220,7 +1186,6 @@ window.tampilkanHasilLaporan = async function(){
             return;
         }
 
-        // AMBIL DATA ABSENSI
         let snapshot;
         let dataAbsensi = [];
 
@@ -1340,7 +1305,6 @@ window.tampilkanHasilLaporan = async function(){
     }
 };
 
-// MODAL MANUAL
 window.bukaModalSantri = function(id = null){
     const modal = document.getElementById("modalSantri");
     const title = document.getElementById("modalTitle");
@@ -1368,7 +1332,6 @@ window.tutupModalSantri = function(){
     document.getElementById("modalSantri").style.display = "none";
 };
 
-// MODAL IMPORT
 window.bukaModalImport = function(){
     document.getElementById("formImport").reset();
     document.getElementById("modalImport").style.display = "flex";
@@ -1378,7 +1341,6 @@ window.tutupModalImport = function(){
     document.getElementById("modalImport").style.display = "none";
 };
 
-// MODAL HAPUS KELAS
 window.bukaModalHapusKelas = function(){
     siapkanFilterKelas();
     document.getElementById("formHapusKelas").reset();
@@ -1389,7 +1351,6 @@ window.tutupModalHapusKelas = function(){
     document.getElementById("modalHapusKelas").style.display = "none";
 };
 
-// PROSES HAPUS SANTRI PER KELAS
 document.getElementById("formHapusKelas").addEventListener("submit", async function(e){
     e.preventDefault();
     const kelasTarget = document.getElementById("pilihanKelasHapus").value;
@@ -1448,7 +1409,6 @@ document.getElementById("formHapusKelas").addEventListener("submit", async funct
     }
 });
 
-// PROSES IMPORT CSV
 document.getElementById("formImport").addEventListener("submit", async function(e){
     e.preventDefault();
     const fileInput = document.getElementById("fileCsv");
@@ -1531,7 +1491,6 @@ document.getElementById("formImport").addEventListener("submit", async function(
     reader.readAsText(file, "UTF-8");
 });
 
-// SIMPAN TAMBAH / EDIT MANUAL
 document.getElementById("formSantri").addEventListener("submit", async function(e){
     e.preventDefault();
     const id = document.getElementById("santriId").value;
@@ -1566,7 +1525,6 @@ document.getElementById("formSantri").addEventListener("submit", async function(
     }
 });
 
-// TOGGLE STATUS
 window.toggleStatusSantri = async function(id){
     const target = santri.find(s => s.id === id);
     if(!target) return;
@@ -1586,35 +1544,25 @@ window.toggleStatusSantri = async function(id){
     }
 };
 
-// ==========================================
-// EVENT LISTENERS & FUNGSI TOMBOL
-// ==========================================
-
-// 1. Pencarian Santri di Halaman Beranda
 document.getElementById("search").addEventListener("input", filterSantri);
 
-// 2. Pencarian Santri di Halaman Kelola Santri
 document.getElementById("searchManage").addEventListener("input", function(){
     tampilkanKelolaSantri(this.value);
 });
 
-// 3. Filter Kelas di Halaman Beranda
 document.getElementById("filterKelas").addEventListener("change", function(){
     kelasTerpilih = this.value;
     filterSantri();
     hitungStatistik();
 });
 
-// 4. Fungsi Pilih Jam Pelajaran (Tombol Horizontal)
 window.pilihJam = async function(nilaiJam, element) {
     jamPelajaran = nilaiJam;
 
-    // Ubah status kelas tombol aktif
     const semuaBtnJam = document.querySelectorAll('.btn-jam');
     semuaBtnJam.forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
 
-    // Tampilkan indikator loading dan muat data absensi
     const list = document.getElementById("studentList");
     const labelJam = nilaiJam === '10' ? 'Subuh' : `Jam ke-${nilaiJam}`;
     list.innerHTML = `<div class="loading">Memuat data ${labelJam}...</div>`;
@@ -1624,7 +1572,6 @@ window.pilihJam = async function(nilaiJam, element) {
     hitungStatistik();
 };
 
-// 5. Fungsi Hadirkan Semua Santri
 window.hadirkanSemuaSantri = async function(){
     const jamTerpilih = jamPelajaran;
     const kelasTerpilih = document.getElementById("filterKelas").value;
@@ -1675,7 +1622,6 @@ window.hadirkanSemuaSantri = async function(){
     }
 };
 
-// 6. Fungsi Reset / Hapus Status Absensi
 window.resetSemuaAbsensiSantri = async function(){
     const jamTerpilih = jamPelajaran;
     const kelasTerpilih = document.getElementById("filterKelas").value;
@@ -1695,7 +1641,8 @@ window.resetSemuaAbsensiSantri = async function(){
         return;
     }
 
-    if(!confirm(`Apakah Anda yakin ingin menghapus/mengosongkan status absensi untuk ${daftarTarget.length} santri pada Jam ke-${jamTerpilih === '10' ? 'Subuh' : jamTerpilih}?`)){
+    const labelJam = jamTerpilih === '10' ? 'Subuh' : `Jam ke-${jamTerpilih}`;
+    if(!confirm(`Apakah Anda yakin ingin menghapus/mengosongkan status absensi untuk ${daftarTarget.length} santri pada ${labelJam}?`)){
         return;
     }
 
@@ -1734,122 +1681,6 @@ window.resetSemuaAbsensiSantri = async function(){
         tampilError("Reset Absensi Error: " + err.message);
     }
 };
-
-// HADIRKAN SEMUA SANTRI
-window.hadirkanSemuaSantri = async function(){
-    const jamTerpilih = jamPelajaran;
-    const kelasTerpilih = document.getElementById("filterKelas").value;
-    const kataKunci = document.getElementById("search").value.toLowerCase();
-
-    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
-
-    if(kelasTerpilih){
-        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
-    }
-    if(kataKunci){
-        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
-    }
-
-    if(daftarTarget.length === 0){
-        toast("Tidak ada santri yang dapat diproses!");
-        return;
-    }
-
-    try {
-        toast("Sedang memproses...");
-
-        const janjiSimpan = daftarTarget.map(async (s) => {
-            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
-            const refAbsen = doc(db, "absensi", documentId);
-            
-            await setDoc(refAbsen, {
-                santriId: s.id,
-                tanggal: tanggalHariIni,
-                jam: jamTerpilih,
-                status: "hadir",
-                userId: user.uid,
-                updatedAt: new Date().toISOString()
-            });
-
-            absensiHariIni[s.id] = "hadir";
-        });
-
-        await Promise.all(janjiSimpan);
-
-        toast(`Semua santri (${daftarTarget.length}) langsung HADIR ✓`);
-        
-        filterSantri();
-        hitungStatistik();
-
-    } catch(err) {
-        toast("Gagal memproses: " + err.message);
-    }
-};
-
-    // RESET / HILANGKAN STATUS ABSENSI SEMUA SANTRI TERFILTER
-window.resetSemuaAbsensiSantri = async function(){
-    const jamTerpilih = document.getElementById("filterJam").value;
-    const kelasTerpilih = document.getElementById("filterKelas").value;
-    const kataKunci = document.getElementById("search").value.toLowerCase();
-
-    // Filter santri aktif yang sedang tampil
-    let daftarTarget = santri.filter(s => s.status !== "nonaktif");
-
-    if(kelasTerpilih){
-        daftarTarget = daftarTarget.filter(s => s.kelas === kelasTerpilih);
-    }
-    if(kataKunci){
-        daftarTarget = daftarTarget.filter(s => s.nama.toLowerCase().includes(kataKunci));
-    }
-
-    if(daftarTarget.length === 0){
-        toast("Tidak ada santri yang dapat diproses!");
-        return;
-    }
-
-    // Konfirmasi sebelum menghapus
-    if(!confirm(`Apakah Anda yakin ingin menghapus/mengosongkan status absensi untuk ${daftarTarget.length} santri pada Jam ke-${jamTerpilih}?`)){
-        return;
-    }
-
-    try {
-        toast("Mengosongkan absensi...");
-
-        // Gunakan batch delete agar proses ke Firestore lebih cepat dan efisien
-        let batch = writeBatch(db);
-        let count = 0;
-
-        for(const s of daftarTarget){
-            const documentId = `${tanggalHariIni}_Jam${jamTerpilih}_${s.id}`;
-            const refAbsen = doc(db, "absensi", documentId);
-            
-            batch.delete(refAbsen);
-            delete absensiHariIni[s.id]; // Hapus dari memori lokal
-            count++;
-
-            // Commit setiap kelipatan 400 dokumen
-            if(count === 400){
-                await batch.commit();
-                batch = writeBatch(db);
-                count = 0;
-            }
-        }
-
-        if(count > 0){
-            await batch.commit();
-        }
-
-        toast(`Status absensi ${daftarTarget.length} santri berhasil di-reset ✓`);
-        
-        filterSantri();
-        hitungStatistik();
-
-    } catch(err) {
-        toast("Gagal menghapus status: " + err.message);
-        tampilError("Reset Absensi Error: " + err.message);
-    }
-};
-
 </script>
 
 </body>
